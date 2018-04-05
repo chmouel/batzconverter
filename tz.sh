@@ -2,9 +2,9 @@
 # needs bash v4
 # you can do things like this :
 # % tz
-# Paris: Thu Apr  5 22:53:24 CEST 2018
-# Brisbane: Thu Apr  5 22:53:24 CEST 2018
-# Bangalore: Thu Apr  5 22:53:24 CEST 2018
+# Paris: Thu Apr  5 23:04:42 CEST 2018
+# Brisbane: Fri Apr  6 07:04:42 AEST 2018
+# Bangalore: Fri Apr  6 02:34:42 IST 2018
 # % tz 10h30
 # Paris: Thu Apr  5 10:30:00 CEST 2018
 # Brisbane: Fri Apr  6 02:30:00 CEST 2018
@@ -31,7 +31,7 @@ tzone=(
     ["Brisbane"]="Australia/Brisbane"
     ["Paris"]="Europe/Paris"
 )
-athour=now
+athour=
 args=($@)
 
 if [[ -n ${1} ]];then
@@ -42,5 +42,7 @@ fi
 
 for i in ${!tzone[@]};do
     echo -n "$i: "
-    ${date} --date="TZ=\"${tzone[$i]}\" ${athour}"
+    # bug in gnu date? 'now' doesn't take in consideration TZ :(
+    [[ -n ${athour} ]] && ${date} --date="TZ=\"${tzone[$i]}\" ${athour}" || \
+            TZ=${tzone[$i]} ${date}
 done
