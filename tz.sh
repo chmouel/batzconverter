@@ -17,9 +17,7 @@
 # Paris: Thu Apr 12 11:00:00 CEST 2018
 # Brisbane: Thu Apr 12 03:00:00 CEST 2018
 # Bangalore: Thu Apr 12 07:30:00 CEST 2018
-
-set -e
-set -pipefail
+set -eo pipefail
 
 date=date
 type -p gdate >/dev/null 2>/dev/null && date=gdate
