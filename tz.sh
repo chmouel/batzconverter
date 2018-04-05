@@ -19,7 +19,7 @@
 # Bangalore: Thu Apr 12 07:30:00 CEST 2018
 
 set -e
-set -f
+set -pipefail
 
 date=date
 type -p gdate >/dev/null 2>/dev/null && date=gdate
