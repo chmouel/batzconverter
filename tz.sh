@@ -25,7 +25,7 @@ athour=
 args=($@)
 
 if [[ -n ${1} ]];then
-    [[ $1 != [0-9]*(:|h)[0-9]* ]] && { echo "Invalid date format: $1"; exit 1; }
+    [[ $1 != [0-9]*(:|h)[0-9]* ]] && { echo "Invalid date format: $1 you need to specify a time first like tz 10h00 tomorrow!"; exit 1; }
     athour="${1/h/:} ${args[@]:1}"
 fi
 
