@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# needs bash v4
 # you can do things like this :
 # % tz
 # % tz 10h30
 # % tz 10h30 next week
 # % tz 11:00 next thursday
 #
-# and so on!
+# and so on,
+#
+# This needs gnu date, on MacOSX just install gnuutils from brew
+#
+# This needs bash v4 too, you need to install it from brew as well
+# on MacOSX
+#
 
 set -eo pipefail
 declare -A tzone
@@ -17,6 +22,9 @@ tzone=(
     ["Brisbane"]="Australia/Brisbane"
     ["Paris"]="Europe/Paris"
 )
+
+# If that fails (old distros used to do a hardlink for /etc/localtime)
+# you may want to specify your tz lie America/Chicago etc...
 currenttz=$(/bin/ls -l /etc/localtime|awk -F/ '{print $(NF-1)"/"$NF}')
 date=date
 type -p gdate >/dev/null 2>/dev/null && date=gdate
