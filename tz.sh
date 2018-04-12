@@ -68,11 +68,13 @@ fi
 
 args=($@)
 if [[ -n ${1} ]];then
-    [[ $1 != [0-9]*(:|h)[0-9]* ]] && {
-        echo "Invalid date format: $1 you need to specify a time first like tz 10h00 tomorrow!"
+    t=$1
+    [[ $t != [0-9]*(:|h)[0-9]* ]] && {
+        echo "Invalid date format: $t you need to specify a time first like tz 10h00 tomorrow!"
         exit 1
     }
-    athour="${1/h/:} ${args[@]:1}"
+    [[ $t == *h ]] && t=${t%h}
+    athour="${t/h/:} ${args[@]:1}"
 fi
 
 
