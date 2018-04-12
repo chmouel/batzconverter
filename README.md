@@ -24,11 +24,11 @@ to say something like this, show me the different times tomorrow at 10h00 UTC
 you can do :
 
 ```bash
-% tz +UTC -t UTC 10h00 tomorrow
+% tz -t UTC 10
 ````
 
-*The order here is important first have the + to add the UTC timezone and set
-the base timezone to UTC to calculate the others*
+*If you want to add extra timezone with +TZ you need to do at first before the
+options, cause bash getopt sucks*
 
 ## Install
 

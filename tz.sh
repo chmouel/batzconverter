@@ -22,10 +22,7 @@ By default this script will try to detect your current timezone, if you want
 to say something like this, show me the different times tomorrow at 10h00 UTC
 you can do :
 
-% tz +UTC -t UTC 10h00 tomorrow
-
-The order here is important first have the + to add the UTC timezone and set
-the base timezone to UTC to calculate the others.
+% tz -t UTC 10h00 tomorrow
 
 and so on,
 
@@ -64,6 +61,7 @@ done
 
 if [[ $1 == "-t" ]];then
     currenttz=$2
+    tzone[$2]=$2
     shift
     shift
 fi
