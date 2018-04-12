@@ -23,7 +23,7 @@ declare -A tzone
 
 ## Change this
 tzone=(
-    ["Bengalore"]="Asia/Calcutta"
+    ["Bangalore"]="Asia/Calcutta"
     ["Brisbane"]="Australia/Brisbane"
     ["Paris"]="Europe/Paris"
 )
