@@ -1,7 +1,8 @@
 # tzconverter
 Show times in different timezone with bash
-Author: Chmouel Boudjnah <chmouel@chmouel.com
-License: GPL
+
+* Author: Chmouel Boudjnah <chmouel@chmouel.com
+* License: GPL
 
 ## Usage
 ```bash
