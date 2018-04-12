@@ -9,6 +9,14 @@
 #
 # tz +America/Chicago +UTC 10h00 tomorrow
 #
+# By default this script will try to detect your current timezone, if you want
+# to say something like this, show me the different times tomorrow at 10h00 UTC
+# you can do :
+#
+# tz +UTC -t UTC 10h00 tomorrow
+#
+# The order here is important first have the + to add the UTC timezone and set
+# the base timezone to UTC to calculate the others.
 #
 # and so on,
 #
@@ -17,7 +25,6 @@
 # This needs bash v4 too, you need to install it from brew as well
 # on MacOSX
 #
-
 set -eo pipefail
 declare -A tzone
 
@@ -41,6 +48,12 @@ while [[ $1 == +* ]];do
     tzone[${1#+}]=${1#+}
     shift
 done
+
+if [[ $1 == "-t" ]];then
+    currenttz=$2
+    shift
+    shift
+fi
 
 args=($@)
 if [[ -n ${1} ]];then
