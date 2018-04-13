@@ -30,6 +30,9 @@ This needs gnu date, on MacOSX just install gnuutils from brew
 This needs bash v4 too, you need to install it from brew as well
 on MacOSX
 
+if '-j' is specified tz will generate a json output for 'Alfred' OSX
+launcher.
+
 EOF
 }
 
