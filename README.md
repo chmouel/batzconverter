@@ -34,7 +34,10 @@ options, cause bash getopt sucks*
 
 TZ support alfred, it basically output nicely the timezone from alfred in a nice way.
 
-Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository.
+![See screenshot](./alfredworkflow/screenshot.png)
+
+Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository 
+and make sure the tz script is in one of these path: $HOME/bin/ or /usr/local/bin
 
 ## Install
 
