@@ -30,6 +30,12 @@ you can do :
 *If you want to add extra timezone with +TZ you need to do at first before the
 options, cause bash getopt sucks*
 
+## Alfred Support
+
+TZ support alfred, it basically output nicely the timezone from alfred in a nice way.
+
+Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository.
+
 ## Install
 
 This needs gnu date, on MacOSX just install gnuutils from brew

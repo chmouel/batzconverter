@@ -3,6 +3,7 @@
 # Author: Chmouel Boudjnah <chmouel@chmouel.com>
 set -eo pipefail
 declare -A tzone
+set -x
 
 function help() {
     cat <<EOF
@@ -36,6 +37,9 @@ EOF
 if [[ $1 == "-h" || $1 == "--help" ]];then
     help
     exit 0
+elif [[ $1 == "-j" || $1 == "--json" ]];then
+    jsonoutput=true
+    shift
 fi
 
 ## Change this
@@ -77,10 +81,38 @@ if [[ -n ${1} ]];then
     athour="${t/h/:} ${args[@]:1}"
 fi
 
+if [[ ${jsonoutput} ]];then
+    cat <<EOF
+{"items": [
+EOF
+fi
+
 
 for i in ${!tzone[@]};do
-    echo -n "$i: "
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
-    [[ -n ${athour} ]] && TZ="${tzone[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}" || \
-            TZ=${tzone[$i]} ${date}
+    [[ -n ${athour} ]] && res=$(TZ="${tzone[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}") || \
+            res=$(TZ=${tzone[$i]} ${date})
+    if [[ ${jsonoutput} ]];then
+        cat <<EOF
+    {
+        "uid": "",
+        "title": "$i",
+        "arg": "$res",
+        "subtitle": "$res",
+EOF
+        if [[ -e "$PWD/$i.png" ]];then
+            cat <<EOF
+		"icon": {
+			"path": "$PWD/$i.png"
+		},
+EOF
+        fi
+        echo "},"
+    else
+        echo -n "$i: "
+        echo $res
+    fi
 done
+
+
+[[ -n ${jsonoutput} ]] && echo "]}"
