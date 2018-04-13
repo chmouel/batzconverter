@@ -3,7 +3,6 @@
 # Author: Chmouel Boudjnah <chmouel@chmouel.com>
 set -eo pipefail
 declare -A tzone
-set -x
 
 function help() {
     cat <<EOF
