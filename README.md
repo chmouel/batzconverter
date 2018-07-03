@@ -27,6 +27,10 @@ you can do :
 % tz -t UTC 10
 ````
 
+When you set another timezone than your current one, it wil show a nice ✈️emoji
+near your different base timezone, or by default it will show a 🏠 emojis to
+emphasis the current timezone in your copy and paste.
+
 *If you want to add extra timezone with +TZ you need to do at first before the
 options, cause bash getopt sucks*
 
@@ -36,7 +40,7 @@ TZ support alfred, it basically output nicely the timezone from alfred in a nice
 
 ![See screenshot](./alfredworkflow/screenshot.png)
 
-Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository 
+Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository
 and make sure the tz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
 
 ## Install
