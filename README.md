@@ -4,6 +4,15 @@ Show times in different timezone with bash
 * Author: Chmouel Boudjnah <chmouel@chmouel.com>
 * License: GPL
 
+## Settings
+
+Open the script and look for the `tzone` hashtable, where you can add or remove a tz.
+The format is `TZ Alias Name` (i.e: Paris) = `Timezone` (i.e: Europe/France)
+
+## Requirement
+
+Some pretty modern Bash >4.0 and modern GNU Date. On MacosX install those from brew (bash and gnuutils).
+
 ## Usage
 ```bash
 % tz
