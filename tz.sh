@@ -36,6 +36,29 @@ launcher.
 EOF
 }
 
+
+function c() {
+    BOLD='\033[1m'
+    NONE='\033[00m'
+    RED='\033[01;31m'
+
+    case $1 in
+        bold)
+            color=$BOLD
+            ;;
+        normal)
+            color=$NONE
+            ;;
+        red)
+            color=$BOLD$RED
+            ;;
+        *)
+
+    esac
+    printf "%b" "${color}$2${NONE} "
+}
+
+
 if [[ $1 == "-h" || $1 == "--help" ]];then
     help
     exit 0
@@ -49,6 +72,7 @@ tzone=(
     ["Bangalore"]="Asia/Calcutta"
     ["Brisbane"]="Australia/Brisbane"
     ["Paris"]="Europe/Paris"
+	["Boston"]="America/Chicago"
 )
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
@@ -66,8 +90,21 @@ while [[ $1 == +* ]];do
 done
 
 if [[ $1 == "-t" ]];then
-    currenttz=$2
-    tzone[$2]=$2
+    done=
+    specified=true
+
+    for i in ${!tzone[@]};do
+        if [[ ${2} == ${i} ]];then
+            done=1
+            currenttz=${tzone[$i]}
+        fi
+    done
+
+    if (( !done ));then
+        currenttz=$2
+        tzone[$2]=$2
+    fi
+
     shift
     shift
 fi
@@ -111,8 +148,16 @@ EOF
         fi
         echo "},"
     else
-        echo -n "$i: "
-        echo $res
+        if [[ $currenttz == ${tzone[$i]} ]];then
+            if [[ -n $specified ]];then
+                specified="✈"
+            else
+                specified="🏠"
+            fi
+            printf "%-20s: %s %s\n" `c bold $i` "$res" $specified
+        else
+            printf "%-20s: %s\n" `c bold $i` "$res"
+        fi
     fi
 done
 
