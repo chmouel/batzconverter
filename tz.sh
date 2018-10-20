@@ -72,7 +72,8 @@ tzone=(
     ["Bangalore"]="Asia/Calcutta"
     ["Brisbane"]="Australia/Brisbane"
     ["Paris"]="Europe/Paris"
-	["Boston"]="America/Chicago"
+	["Boston"]="America/New_York"
+	["California"]="America/Los_Angeles"
 )
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
