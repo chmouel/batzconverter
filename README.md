@@ -7,7 +7,13 @@ Show times in different timezone with bash
 ## Settings
 
 Open the script and look for the `tzone` hashtable, where you can add or remove a tz.
-The format is `TZ Alias Name` (i.e: Paris) = `Timezone` (i.e: Europe/France)
+The format is :
+
+    "TZ_Alias_Name"="Timezone"
+
+for example :
+
+    "HomeSweetHome"="Europe/Paris"
 
 ## Requirement
 
