@@ -95,7 +95,7 @@ if [[ $1 == "-t" ]];then
     specified=true
 
     for i in ${!tzone[@]};do
-        if [[ ${2} == ${i} ]];then
+        if [[ ${2} == ${i} || ${2} == ${tzone[$i]} ]];then
             done=1
             currenttz=${tzone[$i]}
         fi
