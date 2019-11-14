@@ -86,7 +86,9 @@ type -p gdate >/dev/null 2>/dev/null && date=gdate
 athour=
 
 while [[ $1 == +* ]];do
-    tzone[${1#+}]=${1#+}
+    noplus=${1#+}
+    [[ -e /usr/share/zoneinfo/${noplus} ]] || { echo "${noplus} does not exist in /usr/share/zoneinfo" ; exit 1 ;}
+    tzone[$(basename ${noplus})]=${1#+}
     shift
 done
 
@@ -109,6 +111,8 @@ if [[ $1 == "-t" ]];then
     shift
     shift
 fi
+
+[[ -e /usr/share/zoneinfo/${currenttz} ]] || { echo "${currenttz} does not exist in /usr/share/zoneinfo" ; exit 1 ;}
 
 args=($@)
 if [[ -n ${1} ]];then
