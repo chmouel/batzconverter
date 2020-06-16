@@ -1,4 +1,4 @@
-# tzconverter
+#  batzconverter - Batman Timezone Converter
 Show times in different timezone with bash
 
 * Author: Chmouel Boudjnah <chmouel@chmouel.com>
@@ -21,17 +21,17 @@ Some pretty modern Bash >4.0 and modern GNU Date. On MacosX install those from b
 
 ## Usage
 ```bash
-% tz
-% tz 10h30
-% tz 10h30 next week
-% tz 11:00 next thursday
+% batz
+% batz 10h30
+% batz 10h30 next week
+% batz 11:00 next thursday
 ```
 
-TZ  will show all different timezone for the timeformat
+BaTZ  will show all different timezone for the timeformat
 
 You can as well add multiple timezones directly on the command line like this :
 ```bash
-% tz +America/Chicago +UTC 10h00 tomorrow
+% batz +America/Chicago +UTC 10h00 tomorrow
 ```
 
 By default this script will try to detect your current timezone, if you want
@@ -39,7 +39,7 @@ to say something like this, show me the different times tomorrow at 10h00 UTC
 you can do :
 
 ```bash
-% tz -t UTC 10
+% batz -t UTC 10
 ````
 
 When you set another timezone than your current one, it wil show a nice ✈️emoji
@@ -51,12 +51,12 @@ options, cause bash getopt sucks*
 
 ## Alfred Support
 
-TZ support alfred, it basically output nicely the timezone from alfred in a nice way.
+BaTZ support alfred, it basically output nicely the timezone from alfred in a nice way.
 
 ![See screenshot](./alfredworkflow/screenshot.png)
 
 Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository
-and make sure the tz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
+and make sure the batz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
 
 ## Install
 
