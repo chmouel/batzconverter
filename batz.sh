@@ -2,7 +2,16 @@
 # License: GPL
 # Author: Chmouel Boudjnah <chmouel@chmouel.com>
 set -eo pipefail
-declare -A tzone
+declare -A TIME_ZONES
+
+## Change the default timezones here!
+TIME_ZONES=(
+    ["Bangalore"]="Asia/Calcutta"
+    ["Brisbane"]="Australia/Brisbane"
+    ["Paris"]="Europe/Paris"
+	["Boston"]="America/New_York"
+	["California"]="America/Los_Angeles"
+)
 
 function help() {
     cat <<EOF
@@ -67,15 +76,6 @@ elif [[ $1 == "-j" || $1 == "--json" ]];then
     shift
 fi
 
-## Change this
-tzone=(
-    ["Bangalore"]="Asia/Calcutta"
-    ["Brisbane"]="Australia/Brisbane"
-    ["Paris"]="Europe/Paris"
-	["Boston"]="America/New_York"
-	["California"]="America/Los_Angeles"
-)
-
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your batz directly in currentz like
 # currentz="America/Chicago"
@@ -88,7 +88,7 @@ athour=
 while [[ $1 == +* ]];do
     noplus=${1#+}
     [[ -e /usr/share/zoneinfo/${noplus} ]] || { echo "${noplus} does not exist in /usr/share/zoneinfo" ; exit 1 ;}
-    tzone[$(basename ${noplus})]=${1#+}
+    TIME_ZONES[$(basename ${noplus})]=${1#+}
     shift
 done
 
@@ -96,16 +96,16 @@ if [[ $1 == "-t" ]];then
     done=
     specified=true
 
-    for i in ${!tzone[@]};do
-        if [[ ${2} == ${i} || ${2} == ${tzone[$i]} ]];then
+    for i in ${!TIME_ZONES[@]};do
+        if [[ ${2} == ${i} || ${2} == ${TIME_ZONES[$i]} ]];then
             done=1
-            currenttz=${tzone[$i]}
+            currenttz=${TIME_ZONES[$i]}
         fi
     done
 
     if (( !done ));then
         currenttz=$2
-        tzone[$2]=$2
+        TIME_ZONES[$2]=$2
     fi
 
     shift
@@ -132,10 +132,10 @@ EOF
 fi
 
 
-for i in ${!tzone[@]};do
+for i in ${!TIME_ZONES[@]};do
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
-    [[ -n ${athour} ]] && res=$(TZ="${tzone[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}") || \
-            res=$(TZ=${tzone[$i]} ${date})
+    [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}") || \
+            res=$(TZ=${TIME_ZONES[$i]} ${date})
     if [[ ${jsonoutput} ]];then
         cat <<EOF
     {
@@ -153,7 +153,7 @@ EOF
         fi
         echo "},"
     else
-        if [[ $currenttz == ${tzone[$i]} ]];then
+        if [[ $currenttz == ${TIME_ZONES[$i]} ]];then
             if [[ -n $specified ]];then
                 specified="✈"
             else
