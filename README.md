@@ -6,7 +6,9 @@ Show times in different timezone with bash
 
 ## Settings
 
-Open the script and look for the `tzone` hashtable, where you can add or remove a tz.
+Open the script and look for the `TIME_ZONE` variable (which is a bash
+array/hashtable), where you can customize the default `TIME_ZONE`.
+
 The format is :
 
     "TZ_Alias_Name"="Timezone"
