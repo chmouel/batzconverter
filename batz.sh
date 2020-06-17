@@ -6,23 +6,23 @@ declare -A tzone
 
 function help() {
     cat <<EOF
-tz allow to calculate different timezone, it allows you to do somethinge like this :
-% tz
-% tz 10h30
-% tz 10h30 next week
-% tz 11:00 next thursday
+batz allow to calculate different timezone, it allows you to do somethinge like this :
+% batz
+% batz 10h30
+% batz 10h30 next week
+% batz 11:00 next thursday
 
 It will show all different timezone for the timeformat
 
 You can as well add multiple timezones directly on the command line like this :
 
-% tz +America/Chicago +UTC 10h00 tomorrow
+% batz +America/Chicago +UTC 10h00 tomorrow
 
 By default this script will try to detect your current timezone, if you want
 to say something like this, show me the different times tomorrow at 10h00 UTC
 you can do :
 
-% tz -t UTC 10h00 tomorrow
+% batz -t UTC 10h00 tomorrow
 
 and so on,
 
@@ -30,7 +30,7 @@ This needs gnu date, on MacOSX just install gnuutils from brew
 This needs bash v4 too, you need to install it from brew as well
 on MacOSX
 
-if '-j' is specified tz will generate a json output for 'Alfred' OSX
+if '-j' is specified batz will generate a json output for 'Alfred' OSX
 launcher.
 
 EOF
@@ -77,7 +77,7 @@ tzone=(
 )
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
-# you may want to specify your tz directly in currentz like
+# you may want to specify your batz directly in currentz like
 # currentz="America/Chicago"
 currenttz=$(/bin/ls -l /etc/localtime|awk -F/ '{print $(NF-1)"/"$NF}')
 date=date
