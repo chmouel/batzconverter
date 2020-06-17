@@ -15,6 +15,8 @@ TIME_ZONES=(
 
 function help() {
     cat <<EOF
+batz - If batman needed a TZ converted he would probably use this 🦇
+
 batz allow to calculate different timezone, it allows you to do somethinge like this :
 % batz
 % batz 10h30
@@ -41,6 +43,10 @@ on MacOSX
 
 if '-j' is specified batz will generate a json output for 'Alfred' OSX
 launcher.
+
+Conditions to use: Be nice and helpful to other people 🤗
+Author: Chmouel Boudjnah <chmouel@chmouel.com>
+License: BSD
 
 EOF
 }
