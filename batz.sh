@@ -20,18 +20,19 @@ batz - If batman needed a TZ converted he would probably use this 🦇
 batz allow to calculate different timezone, it allows you to do somethinge like this :
 % batz
 % batz 10h30
+% batz 19h00 Monday 17 June
 % batz 10h30 next week
 % batz 11:00 next thursday
 
-It will show all different timezone for the timeformat
+It will show all different timezone for the timeformat.
 
 You can as well add multiple timezones directly on the command line like this :
 
 % batz +America/Chicago +UTC 10h00 tomorrow
 
-By default this script will try to detect your current timezone, if you want
-to say something like this, show me the different times tomorrow at 10h00 UTC
-you can do :
+By default this script will try to detect your current timezone and base the
+time conversion on your own timezone, if you want to say something like this,
+show me the different times tomorrow at 10h00 UTC you can do :
 
 % batz -t UTC 10h00 tomorrow
 
