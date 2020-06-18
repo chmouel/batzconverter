@@ -4,6 +4,10 @@ Show times in different timezone with bash
 * Author: Chmouel Boudjnah <chmouel@chmouel.com>
 * License: GPL
 
+## Demo
+
+![See screenshot](./share/screenshot.png)
+
 ## Settings
 
 Open the script and look for the `TIME_ZONE` variable (which is a bash
