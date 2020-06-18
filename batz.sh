@@ -2,7 +2,7 @@
 # License: GPL
 # Author: Chmouel Boudjnah <chmouel@chmouel.com>
 set -eo pipefail
-declare -A TIME_ZONES
+declare -A TIME_ZONES TIME_ZONES_EMOJI
 
 ## Change the default timezones here!
 TIME_ZONES=(
@@ -11,6 +11,14 @@ TIME_ZONES=(
     ["Paris"]="Europe/Paris"
 	["Boston"]="America/New_York"
 	["California"]="America/Los_Angeles"
+)
+
+TIME_ZONES_EMOJI=(
+    ["Bangalore"]="🇮🇳"
+    ["Brisbane"]="🇦🇺"
+    ["Paris"]="🇫🇷"
+	["Boston"]="🇺🇸"
+	["California"]="🇺🇸"
 )
 
 function help() {
@@ -143,6 +151,8 @@ for i in ${!TIME_ZONES[@]};do
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
     [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}") || \
             res=$(TZ=${TIME_ZONES[$i]} ${date})
+    [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]}  "
+
     if [[ ${jsonoutput} ]];then
         cat <<EOF
     {
@@ -166,9 +176,9 @@ EOF
             else
                 specified="🏠"
             fi
-            printf "%-20s: %s %s\n" `c bold $i` "$res" $specified
+            printf "%s%-20s: %s %s\n" "$emoji" `c bold ${i}` "$res" $specified
         else
-            printf "%-20s: %s\n" `c bold $i` "$res"
+            printf "%s%-20s: %s\n" "$emoji" `c bold $i` "$res"
         fi
     fi
 done
