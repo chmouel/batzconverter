@@ -13,12 +13,13 @@ TIME_ZONES=(
 	["California"]="America/Los_Angeles"
 )
 
+# Not sure why some emojis need a space and the other doesnt 🤷🏼‍♂️
 TIME_ZONES_EMOJI=(
-    ["Bangalore"]="🇮🇳"
-    ["Brisbane"]="🇦🇺"
-    ["Paris"]="🇫🇷"
-	["Boston"]="🇺🇸"
-	["California"]="🇺🇸"
+    ["Bangalore"]="🇮🇳 "
+    ["Brisbane"]="🇦🇺 "
+    ["Paris"]="🇫🇷 "
+	["Boston"]="🇺🇸 "
+	["California"]="🐻"
 )
 
 function help() {
@@ -151,7 +152,7 @@ for i in ${!TIME_ZONES[@]};do
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
     [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}") || \
             res=$(TZ=${TIME_ZONES[$i]} ${date})
-    [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]}  "
+    [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
 
     if [[ ${jsonoutput} ]];then
         cat <<EOF
