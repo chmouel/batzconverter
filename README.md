@@ -10,8 +10,28 @@ Show times in different timezone with bash
 
 ## Settings
 
-Open the script and look for the `TIME_ZONE` variable (which is a bash
-array/hashtable), where you can customize the default `TIME_ZONE`.
+Create a file in `~/.config/batz.sh` and add configure the `TIME_ZONES` and `TIME_ZONES_EMOJI` variable like this :
+
+```
+## Change the default timezones here!
+TIME_ZONES=(
+    ["India"]="Asia/Calcutta"
+    ["Europe"]="Europe/Paris"
+	["US-East"]="America/New_York"
+	["US-West"]="America/Los_Angeles"
+)
+```
+
+
+```
+TIME_ZONES_EMOJI=(
+    ["India"]="🇮🇳 "
+    ["Europe"]="🇪🇺 "
+	["US-East"]="🇺🇸 "
+	["US-West"]="🐻"
+)
+```
+
 
 The format is :
 

@@ -22,6 +22,8 @@ TIME_ZONES_EMOJI=(
 	["California"]="🐻"
 )
 
+[[ -e ~/.config/batz.sh ]] && source ~/.config/batz.sh
+
 function help() {
     cat <<EOF
 batz - If batman needed a TZ converted he would probably use this 🦇
