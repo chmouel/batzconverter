@@ -75,9 +75,9 @@ emphasis the current timezone in your copy and paste.
 *If you want to add extra timezone with +TZ you need to do at first before the
 options, cause bash getopt sucks*
 
-## Alfred Support
+## [Alfred](https://www.alfredapp.com/) Support
 
-BaTZ support alfred, it basically output nicely the timezone from alfred in a nice way.
+BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely the timezone from alfred in a nice way.
 
 ![See screenshot](./alfredworkflow/screenshot.png)
 
