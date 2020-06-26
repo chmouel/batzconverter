@@ -73,7 +73,9 @@ near your different base timezone, or by default it will show a 🏠 emojis to
 emphasis the current timezone in your copy and paste.
 
 *If you want to add extra timezone with +TZ you need to do at first before the
-options, cause bash getopt sucks*
+options, cause bash getopt is kind of buggy in this regard*
+
+You can use the -j option to output as json and may do some parsing with it. (this is used by the Alfred suppoort).
 
 ## [Alfred](https://www.alfredapp.com/) Support
 
