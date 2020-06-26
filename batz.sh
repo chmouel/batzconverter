@@ -20,6 +20,7 @@ TIME_ZONES_EMOJI=(
     ["Paris"]="🇫🇷 "
 	["Boston"]="🇺🇸 "
 	["California"]="🐻"
+	["UTC"]="🌍"
 )
 
 [[ -e ~/.config/batz.sh ]] && source ~/.config/batz.sh
