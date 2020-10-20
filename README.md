@@ -8,6 +8,18 @@ Show times in different timezone with bash
 
 ![See screenshot](./share/screenshot.png)
 
+## INSTALL
+
+grab the shell script directly from this repo and put it in your path, or just copy and paste this : 
+
+```sh
+dest="/usr/local/bin"
+[[ -w ${dest} ]] || { dest=${HOME}/bin;mkdir -p ${dest} ;}
+curl -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/master/batz.sh && \
+        chmod +x ${dest}/batz &&
+	echo "'The' batz has been installed into: ${dest}/batz"
+```
+
 ## Settings
 
 Create a file in `~/.config/batz.sh` and add configure the `TIME_ZONES` and `TIME_ZONES_EMOJI` variable like this :
@@ -85,9 +97,3 @@ BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely th
 
 Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository
 and make sure the batz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
-
-## Install
-
-This needs gnu date, on MacOSX just install gnuutils from brew
-
-It needs bash v4 too, you need to install it from brew as well on MacOSX
