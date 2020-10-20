@@ -16,7 +16,7 @@ grab the shell script directly from this repo and put it in your path, or just c
 dest="/usr/local/bin"
 [[ -w ${dest} ]] || { dest=${HOME}/bin;mkdir -p ${dest} ;}
 curl -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/master/batz.sh && \
-        chmod +x ${dest}/batz &&
+        chmod +x ${dest}/batz && \
 	echo "'The' batz has been installed into: ${dest}/batz"
 ```
 
