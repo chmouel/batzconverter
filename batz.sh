@@ -9,8 +9,8 @@ TIME_ZONES=(
     ["Bangalore"]="Asia/Calcutta"
     ["Brisbane"]="Australia/Brisbane"
     ["Paris"]="Europe/Paris"
-	["Boston"]="America/New_York"
-	["California"]="America/Los_Angeles"
+    ["Boston"]="America/New_York"
+    ["California"]="America/Los_Angeles"
 )
 
 # Not sure why some emojis need a space and the other doesnt 🤷🏼‍♂️
@@ -18,9 +18,9 @@ TIME_ZONES_EMOJI=(
     ["Bangalore"]="🇮🇳 "
     ["Brisbane"]="🇦🇺 "
     ["Paris"]="🇫🇷 "
-	["Boston"]="🇺🇸 "
-	["California"]="🐻"
-	["UTC"]="🌍"
+    ["Boston"]="🇺🇸 "
+    ["California"]="🐻"
+    ["UTC"]="🌍"
 )
 
 [[ -e ~/.config/batz.sh ]] && source ~/.config/batz.sh
@@ -98,7 +98,7 @@ fi
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your batz directly in currentz like
 # currentz="America/Chicago"
-currenttz=$(/bin/ls -l /etc/localtime|awk -F/ '{print $(NF-1)"/"$NF}')
+currenttz=$(env ls -l /etc/localtime|awk -F/ '{print $(NF-1)"/"$NF}')
 date=date
 type -p gdate >/dev/null 2>/dev/null && date=gdate
 
