@@ -98,7 +98,7 @@ fi
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your batz directly in currentz like
 # currentz="America/Chicago"
-currenttz=$(env ls -l /etc/localtime|awk -F/ '{print $(NF-1)"/"$NF}')
+currenttz=$(env ls -l /etc/localtime|env awk -F/ '{print $(NF-1)"/"$NF}')
 date=date
 type -p gdate >/dev/null 2>/dev/null && date=gdate
 
