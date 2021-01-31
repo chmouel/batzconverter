@@ -4,6 +4,10 @@ Show times in different timezone with bash
 * Author: Chmouel Boudjnah <chmouel@chmouel.com>
 * License: GPL
 
+## Blog post 
+
+https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/
+
 ## Demo
 
 ![See screenshot](./share/screenshot.png)
