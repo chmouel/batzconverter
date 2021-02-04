@@ -19,7 +19,7 @@ TIME_ZONES_EMOJI=(
     ["Brisbane"]="🇦🇺 "
     ["Paris"]="🇫🇷 "
     ["Boston"]="🇺🇸 "
-    ["California"]="🐻"
+    ["California"]="🐻 "
     ["UTC"]="🌍"
 )
 

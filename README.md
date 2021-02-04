@@ -89,6 +89,16 @@ options, cause bash getopt is kind of buggy in this regard*
 
 You can use the -j option to output as json and may do some parsing with it. (this is used by the Alfred suppoort).
 
+## [Rofi](https://github.com/davatorium/rofi) Support
+
+Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere, i.e: `~/.config/rofi/rofibatz.sh`, launch it up like this : 
+
+`rofi -modi batz:${HOME}/.config/rofi/rofitz.sh -show batz`
+
+I have a custom theme so your mileage may vary but for me it rofi will be shows like this : 
+
+![See screenshot](./share/rofibatz.png)
+
 ## [Alfred](https://www.alfredapp.com/) Support
 
 BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely the timezone from alfred in a nice way.
