@@ -99,7 +99,9 @@ Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere,
 
 `rofi -modi batz:${HOME}/.config/rofi/rofitz.sh -show batz`
 
-I have a custom theme so your mileage may vary but for me it rofi will be shows like this : 
+You can type batz string i.e: `13h00 tomorrow` when you press enter it will evaluate it.
+
+I have a custom theme so your mileage may vary but for me it will be shown like this : 
 
 ![See screenshot](./share/rofibatz.png)
 
