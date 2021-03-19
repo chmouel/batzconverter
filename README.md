@@ -101,7 +101,7 @@ Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere,
 
 You can type batz string i.e: `13h00 tomorrow` when you press enter it will evaluate it.
 
-I have a custom theme so your mileage may vary but for me it will be shown like this : 
+I have a [custom theme](https://github.com/chmouel/mounch/blob/main/rofi/mounch.rasi) so your mileage may vary but for me it will be shown like this : 
 
 ![See screenshot](./share/rofibatz.png)
 
