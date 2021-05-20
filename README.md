@@ -97,7 +97,7 @@ You can use the -j option to output as json and may do some parsing with it. (th
 
 Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere, i.e: `~/.config/rofi/rofibatz.sh`, launch it up like this : 
 
-`rofi -modi batz:${HOME}/.config/rofi/rofitz.sh -show batz`
+`rofi -modi batz:${HOME}/.config/rofi/rofibatz.sh -show batz`
 
 You can type batz string i.e: `13h00 tomorrow` when you press enter it will evaluate it.
 
