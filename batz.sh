@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# License: GPL
 # Author: Chmouel Boudjnah <chmouel@chmouel.com>
 set -eo pipefail
 declare -A TIME_ZONES TIME_ZONES_EMOJI
