@@ -105,7 +105,10 @@ I have a [custom theme](https://github.com/chmouel/mounch/blob/main/rofi/mounch.
 
 ![See screenshot](./share/rofibatz.png)
 
-## [Wofi] Support
+## [Wofi](https://hg.sr.ht/~scoopta/wofi) Support
+
+![Screenshot_2021-11-23-23:24 03](https://user-images.githubusercontent.com/98980/143138764-574a7885-dc02-4c78-ad24-0c44d88f1bc0.png)
+
 
 Just do something like this assuming you have wofi and wl-copy installed :
 
