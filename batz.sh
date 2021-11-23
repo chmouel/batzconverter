@@ -22,7 +22,10 @@ TIME_ZONES_EMOJI=(
     ["UTC"]="🌍"
 )
 
-[[ -e ~/.config/batz.sh ]] && source ~/.config/batz.sh
+loaded=
+for f in ~/.config/batz.sh ~/.config/batz/config ;do
+    [[ -e ${f} ]] && { source ~/.config/batz.sh; loader=yes ;}
+done
 
 function help() {
     cat <<EOF
@@ -56,9 +59,13 @@ on MacOSX
 if '-j' is specified batz will generate a json output for 'Alfred' OSX
 launcher.
 
+configuration is located in ~/.config/batz/config
+see variables TIME_ZONES and TIME_ZONES_EMOJI in this file to see how to
+configure them.
+
 Conditions to use: Be nice and helpful to other people 🤗
 Author: Chmouel Boudjnah <chmouel@chmouel.com>
-License: BSD
+License: Apache
 
 EOF
 }
