@@ -105,6 +105,16 @@ I have a [custom theme](https://github.com/chmouel/mounch/blob/main/rofi/mounch.
 
 ![See screenshot](./share/rofibatz.png)
 
+## [Wofi] Support
+
+Just do something like this assuming you have wofi and wl-copy installed :
+
+```shell
+wl-copy $(batz|sed -e "s/\x1b\[.\{1,5\}m//g"|wofi -d|sed 's/.* : //')
+```
+
+will only get you the timezone since wofi doesnt support scripts (afaik)
+
 ## [Alfred](https://www.alfredapp.com/) Support
 
 BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely the timezone from alfred in a nice way.
