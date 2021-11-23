@@ -26,5 +26,6 @@ set -x
 
 git tag -s ${VERSION} -m "Releasing version ${VERSION}"
 git push --tags origin ${VERSION}
+gh release create ${VERSION} --notes "Release ${VERSION} 🥳"
 
 ./hack/aur/build.sh ${VERSION}
