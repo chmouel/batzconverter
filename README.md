@@ -26,7 +26,7 @@ curl -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/
 
 ## Settings
 
-Create a file in `~/.config/batz.sh` and add configure the `TIME_ZONES` and `TIME_ZONES_EMOJI` variable like this :
+Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and `TIME_ZONES_EMOJI` variable like this :
 
 ```
 ## Change the default timezones here!
