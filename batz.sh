@@ -24,7 +24,7 @@ TIME_ZONES_EMOJI=(
 
 loaded=
 for f in ~/.config/batz.sh ~/.config/batz/config ;do
-    [[ -e ${f} ]] && { source ~/.config/batz.sh; loader=yes ;}
+    [[ -e ${f} ]] && { source ${f}; loader=yes ;}
 done
 
 function help() {
