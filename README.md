@@ -2,7 +2,7 @@
 Show times in different timezone with bash
 
 * Author: Chmouel Boudjnah <chmouel@chmouel.com>
-* License: GPL
+* License: Apache-2.0
 
 ## Blog post 
 
