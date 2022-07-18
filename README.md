@@ -60,6 +60,8 @@ for example :
 
     "HomeSweetHome"="Europe/Paris"
 
+You can look an example in my config [here](https://gitlab.com/chmouel/rc-config/-/blob/main/batz/config)
+
 ## Requirement
 
 Some pretty modern Bash >4.0 and modern GNU Date. On MacosX install those from brew (bash and gnuutils).
