@@ -46,6 +46,9 @@ TIME_ZONES_EMOJI=(
 	["US-East"]="🇺🇸 "
 	["US-West"]="🐻"
 )
+
+DATE_FORMAT="%b %Hh%M"
+DATE_FORMAT_PADDING=10
 ```
 
 

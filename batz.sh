@@ -12,6 +12,12 @@ TIME_ZONES=(
     ["California"]="America/Los_Angeles"
 )
 
+# see man date(1) for time format
+DATE_FORMAT="%c"
+
+# How many padding to add when showing the date format, only useful when you customize the DATE_FORMAT
+DATE_FORMAT_PADDING=30
+
 # Not sure why some emojis need a space and the other doesnt 🤷🏼‍♂️
 TIME_ZONES_EMOJI=(
     ["Bangalore"]="🇮🇳 "
@@ -159,8 +165,8 @@ fi
 
 for i in ${!TIME_ZONES[@]};do
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
-    [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour}") || \
-            res=$(TZ=${TIME_ZONES[$i]} ${date})
+    [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour} "+${DATE_FORMAT}"") || \
+            res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
     [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
 
     if [[ ${jsonoutput} ]];then
@@ -186,9 +192,9 @@ EOF
             else
                 specified="🏠"
             fi
-            printf "%s%-20s: %s %s\n" "$emoji" `c bold ${i}` "$res" $specified
+            printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" `c bold ${i}` "$res" "$emoji" $specified
         else
-            printf "%s%-20s: %s\n" "$emoji" `c bold $i` "$res"
+            printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" `c bold $i` "$res" "$emoji"
         fi
     fi
 done
