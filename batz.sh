@@ -165,7 +165,7 @@ fi
 
 for i in ${!TIME_ZONES[@]};do
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
-    [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"$currenttz\" ${athour} "+${DATE_FORMAT}"") || \
+    [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") || \
             res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
     [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
 
