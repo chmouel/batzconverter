@@ -31,10 +31,10 @@ Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and 
 ```shell
 ## Change the default timezones here!
 TIME_ZONES=(
-    ["India"]="Asia/Calcutta"
-    ["Europe"]="Europe/Paris"
-	["US-East"]="America/New_York"
-	["US-West"]="America/Los_Angeles"
+  ["India"]="Asia/Calcutta"
+  ["Europe"]="Europe/Paris"
+  ["US-East"]="America/New_York"
+  ["US-West"]="America/Los_Angeles"
 )
 
 TIME_ZONES_EMOJI=(
