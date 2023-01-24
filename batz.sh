@@ -16,7 +16,7 @@ TIME_ZONES=(
 DATE_FORMAT="%c"
 
 # How many padding to add when showing the date format, only useful when you customize the DATE_FORMAT
-DATE_FORMAT_PADDING=30
+DATE_FORMAT_PADDING=0
 
 # Not sure why some emojis need a space and the other doesnt 🤷🏼‍♂️
 TIME_ZONES_EMOJI=(
