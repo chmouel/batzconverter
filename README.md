@@ -20,7 +20,7 @@ grab the shell script directly from this repo and put it in your path, or just c
 #  will try to install in /usr/local if you have the right or $HOME/.local/bin need to be in your path
 dest="/usr/local/bin"
 [[ -w ${dest} ]] || { dest=${HOME}/.local/bin;mkdir -p ${dest} ;}
-curl -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/master/batz.sh && \
+curl -f -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/master/batz.sh && \
         chmod +x ${dest}/batz && \
 	echo "'The' batz has been installed into: ${dest}/batz"
 ```
