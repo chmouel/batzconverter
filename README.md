@@ -28,7 +28,7 @@ curl -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/
 
 Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and `TIME_ZONES_EMOJI` variable like this :
 
-```
+```shell
 ## Change the default timezones here!
 TIME_ZONES=(
     ["India"]="Asia/Calcutta"
@@ -36,19 +36,17 @@ TIME_ZONES=(
 	["US-East"]="America/New_York"
 	["US-West"]="America/Los_Angeles"
 )
-```
 
-
-```
 TIME_ZONES_EMOJI=(
-    ["India"]="🇮🇳 "
-    ["Europe"]="🇪🇺 "
-	["US-East"]="🇺🇸 "
-	["US-West"]="🐻"
+ ["India"]="🇮🇳 "
+ ["Europe"]="🇪🇺 "
+ ["US-East"]="🇺🇸 "
+ ["US-West"]="🐻"
 )
 
 DATE_FORMAT="%b %Hh%M"
 DATE_FORMAT_PADDING=10
+DEFAULT_TIME_ZOME_EMOJI="🌐"
 ```
 
 
