@@ -81,11 +81,11 @@ You can as well add multiple timezones directly on the command line like this :
 ```
 
 By default this script will try to detect your current timezone, if you want
-to say something like this, show me the different times tomorrow at 10h00 UTC
-you can do :
+to say something like this: 
+show me the different times tomorrow if I were at 10h00 AM on UTC timezone, you can do :
 
 ```bash
-% batz -t UTC 10
+% batz -t UTC 10h00
 ````
 
 When you set another timezone than your current one, it wil show a nice ✈️emoji
