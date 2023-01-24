@@ -28,9 +28,10 @@ TIME_ZONES_EMOJI=(
     ["UTC"]="🌍"
 )
 
-loaded=
+DEFAULT_TIME_ZOME_EMOJI="🌍"
+
 for f in ~/.config/batz.sh ~/.config/batz/config ;do
-    [[ -e ${f} ]] && { source ${f}; loader=yes ;}
+    [[ -e ${f} ]] && { source ${f} ;}
 done
 
 function help() {
@@ -111,8 +112,8 @@ fi
 # you may want to specify your batz directly in currentz like
 # currentz="America/Chicago"
 currenttz=$(env ls -l /etc/localtime|env awk -F/ '{print $(NF-1)"/"$NF}')
-date=date
-type -p gdate >/dev/null 2>/dev/null && date=gdate
+date="date"
+type -p gdate >/dev/null 2>/dev/null && date="gdate"
 
 athour=
 
@@ -127,8 +128,8 @@ if [[ $1 == "-t" ]];then
     done=
     specified=true
 
-    for i in ${!TIME_ZONES[@]};do
-        if [[ ${2} == ${i} || ${2} == ${TIME_ZONES[$i]} ]];then
+    for i in "${!TIME_ZONES[@]}";do
+        if [[ ${2} == "${i}" || ${2} == "${TIME_ZONES[$i]}" ]];then
             done=1
             currenttz=${TIME_ZONES[$i]}
         fi
@@ -145,7 +146,7 @@ fi
 
 [[ -e /usr/share/zoneinfo/${currenttz} ]] || { echo "${currenttz} does not exist in /usr/share/zoneinfo" ; exit 1 ;}
 
-args=($@)
+args=("$@")
 if [[ -n ${1} ]];then
     t=$1
     [[ $t != [0-9]*(:|h)[0-9]* ]] && {
@@ -153,7 +154,7 @@ if [[ -n ${1} ]];then
         exit 1
     }
     [[ $t == *h ]] && t=${t%h}
-    athour="${t/h/:} ${args[@]:1}"
+    athour="${t/h/:} ${args[1]}"
 fi
 
 if [[ ${jsonoutput} ]];then
@@ -163,11 +164,11 @@ EOF
 fi
 
 
-for i in ${!TIME_ZONES[@]};do
+for i in "${!TIME_ZONES[@]}";do
     # bug in gnu date? 'now' doesn't take in consideration TZ :(
     [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") || \
             res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
-    [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
+    [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} " || emoji="${DEFAULT_TIME_ZOME_EMOJI}"
 
     if [[ ${jsonoutput} ]];then
         cat <<EOF
@@ -186,15 +187,15 @@ EOF
         fi
         echo "},"
     else
-        if [[ $currenttz == ${TIME_ZONES[$i]} ]];then
+        if [[ $currenttz == "${TIME_ZONES[$i]}" ]];then
             if [[ -n $specified ]];then
                 specified="✈"
             else
                 specified="🏠"
             fi
-            printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" `c bold ${i}` "$res" "$emoji" $specified
+            printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" $(c bold ${i}) "$res" "$emoji" $specified
         else
-            printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" `c bold $i` "$res" "$emoji"
+            printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" $(c bold $i) "$res" "$emoji"
         fi
     fi
 done
