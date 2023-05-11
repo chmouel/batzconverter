@@ -5,11 +5,11 @@ declare -A TIME_ZONES TIME_ZONES_EMOJI
 
 ## Change the default timezones here!
 TIME_ZONES=(
-    ["Bangalore"]="Asia/Calcutta"
-    ["Brisbane"]="Australia/Brisbane"
-    ["Paris"]="Europe/Paris"
-    ["Boston"]="America/New_York"
-    ["California"]="America/Los_Angeles"
+	["Bangalore"]="Asia/Calcutta"
+	["Brisbane"]="Australia/Brisbane"
+	["Paris"]="Europe/Paris"
+	["Boston"]="America/New_York"
+	["California"]="America/Los_Angeles"
 )
 
 # see man date(1) for time format
@@ -20,24 +20,24 @@ DATE_FORMAT_PADDING=0
 
 # Not sure why some emojis need a space and the other doesnt 🤷🏼‍♂️
 TIME_ZONES_EMOJI=(
-    ["Bangalore"]="🇮🇳 "
-    ["Brisbane"]="🇦🇺 "
-    ["Paris"]="🇫🇷 "
-    ["Boston"]="🇺🇸 "
-    ["California"]="🐻 "
-    ["UTC"]="🌍"
+	["Bangalore"]="🇮🇳 "
+	["Brisbane"]="🇦🇺 "
+	["Paris"]="🇫🇷 "
+	["Boston"]="🇺🇸 "
+	["California"]="🐻 "
+	["UTC"]="🌍"
 )
 
 DEFAULT_TIME_ZOME_EMOJI="🌍"
 nocolor=
 [[ -n ${NO_COLOR} ]] && nocolor=true
 
-for f in ~/.config/batz.sh ~/.config/batz/config ;do
-    [[ -e ${f} ]] && { source ${f} ;}
+for f in ~/.config/batz.sh ~/.config/batz/config; do
+	[[ -e ${f} ]] && { source ${f}; }
 done
 
 function help() {
-    cat <<EOF
+	cat <<EOF
 batz - If batman needed a TZ converted he would probably use this 🦇
 
 batz allow to calculate different timezone, it allows you to do somethinge like this :
@@ -81,147 +81,149 @@ License: Apache
 EOF
 }
 
-
 function c() {
-    [[ -n ${nocolor} ]] && {
-        printf "%s " "$2"
-        return
-    }
-    BOLD='\033[1m'
-    NONE='\033[00m'
-    RED='\033[01;31m'
+	[[ -n ${nocolor} ]] && {
+		printf "%s " "$2"
+		return
+	}
+	BOLD='\033[1m'
+	NONE='\033[00m'
+	RED='\033[01;31m'
 
-    case $1 in
-        bold)
-            color=$BOLD
-            ;;
-        normal)
-            color=$NONE
-            ;;
-        red)
-            color=$BOLD$RED
-            ;;
-        *)
+	case $1 in
+	bold)
+		color=$BOLD
+		;;
+	normal)
+		color=$NONE
+		;;
+	red)
+		color=$BOLD$RED
+		;;
+	*) ;;
 
-    esac
-    printf "%b" "${color}$2${NONE} "
+	esac
+	printf "%b" "${color}$2${NONE} "
 }
 
 # parse arguments
 while getopts ":hjn" opt; do
-    case $opt in
-        n)
-            nocolor=true
-            ;;
-        h)
-            help
-            exit 0
-            ;;
-        j)
-            jsonoutput=true
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-            ;;
-    esac
+	case $opt in
+	n)
+		nocolor=true
+		;;
+	h)
+		help
+		exit 0
+		;;
+	j)
+		jsonoutput=true
+		;;
+	\?)
+		echo "Invalid option: -$OPTARG" >&2
+		exit 1
+		;;
+	esac
 done
-shift $((OPTIND-1))
-
+shift $((OPTIND - 1))
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your batz directly in currentz like
 # currentz="America/Chicago"
-currenttz=$(env ls -l /etc/localtime|env awk -F/ '{print $(NF-1)"/"$NF}')
+currenttz=$(env ls -l /etc/localtime | env awk -F/ '{print $(NF-1)"/"$NF}')
 date="date"
 type -p gdate >/dev/null 2>/dev/null && date="gdate"
 athour=
 
-while [[ $1 == +* ]];do
-    noplus=${1#+}
-    [[ -e /usr/share/zoneinfo/${noplus} ]] || { echo "${noplus} does not exist in /usr/share/zoneinfo" ; exit 1 ;}
-    TIME_ZONES[$(basename ${noplus})]=${1#+}
-    shift
+while [[ $1 == +* ]]; do
+	noplus=${1#+}
+	[[ -e /usr/share/zoneinfo/${noplus} ]] || {
+		echo "${noplus} does not exist in /usr/share/zoneinfo"
+		exit 1
+	}
+	TIME_ZONES[$(basename ${noplus})]=${1#+}
+	shift
 done
 
-if [[ $1 == "-t" ]];then
-    done=
-    specified=true
+if [[ $1 == "-t" ]]; then
+	done=
+	specified=true
 
-    for i in "${!TIME_ZONES[@]}";do
-        if [[ ${2} == "${i}" || ${2} == "${TIME_ZONES[$i]}" ]];then
-            done=1
-            currenttz=${TIME_ZONES[$i]}
-        fi
-    done
+	for i in ${!TIME_ZONES[@]}; do
+		if [[ ${2} == ${i} || ${2} == ${TIME_ZONES[$i]} ]]; then
+			done=1
+			currenttz=${TIME_ZONES[$i]}
+		fi
+	done
 
-    if (( !done ));then
-        currenttz=$2
-        TIME_ZONES[$2]=$2
-    fi
+	if ((!done)); then
+		currenttz=$2
+		TIME_ZONES[$2]=$2
+	fi
 
-    shift
-    shift
+	shift
+	shift
 fi
 
-[[ -e /usr/share/zoneinfo/${currenttz} ]] || { echo "${currenttz} does not exist in /usr/share/zoneinfo" ; exit 1 ;}
+[[ -e /usr/share/zoneinfo/${currenttz} ]] || {
+	echo "${currenttz} does not exist in /usr/share/zoneinfo"
+	exit 1
+}
 
-args=("$@")
-if [[ -n ${1} ]];then
-    t=$1
-    [[ $t != [0-9]*(:|h)[0-9]* ]] && {
-        echo "Invalid date format: $t you need to specify a time first like tz 10h00 tomorrow!"
-        exit 1
-    }
-    [[ $t == *h ]] && t=${t%h}
-    athour="${t/h/:} ${args[1]}"
+args=($@)
+if [[ -n ${1} ]]; then
+	t=$1
+	[[ $t != [0-9]*(:|h)[0-9]* ]] && {
+		echo "Invalid date format: $t you need to specify a time first like tz 10h00 tomorrow!"
+		exit 1
+	}
+	[[ $t == *h ]] && t=${t%h}
+	athour="${t/h/:} ${args[@]:1}"
 fi
 
-if [[ ${jsonoutput} ]];then
-    cat <<EOF
+if [[ ${jsonoutput} ]]; then
+	cat <<EOF
 {"items": [
 EOF
 fi
 
+for i in ${!TIME_ZONES[@]}; do
+	# bug in gnu date? 'now' doesn't take in consideration TZ :(
+	[[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") ||
+		res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
+	[[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
+	[[ -n ${nocolor} ]] && emoji=""
 
-for i in "${!TIME_ZONES[@]}";do
-    # bug in gnu date? 'now' doesn't take in consideration TZ :(
-    [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") || \
-            res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
-    [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} " || emoji="${DEFAULT_TIME_ZOME_EMOJI}"
-    [[ -n ${nocolor} ]] && emoji=""
-
-    if [[ ${jsonoutput} ]];then
-        cat <<EOF
+	if [[ ${jsonoutput} ]]; then
+		cat <<EOF
     {
         "uid": "",
         "title": "$i",
         "arg": "$res",
         "subtitle": "$res",
 EOF
-        if [[ -e "$PWD/$i.png" ]];then
-            cat <<EOF
+		if [[ -e "$PWD/$i.png" ]]; then
+			cat <<EOF
 		"icon": {
 			"path": "$PWD/$i.png"
 		},
 EOF
-        fi
-        echo "},"
-    else
-        if [[ $currenttz == "${TIME_ZONES[$i]}" ]];then
-            if [[ -n $nocolor  ]];then
-                specified=""
-            elif [[ -n $specified ]];then
-                specified="✈"
-            else
-                specified="🏠"
-            fi
-            printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" $(c bold ${i}) "$res" "$emoji" $specified
-        else
-            printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" $(c bold $i) "$res" "$emoji"
-        fi
-    fi
+		fi
+		echo "},"
+	else
+		if [[ $currenttz == ${TIME_ZONES[$i]} ]]; then
+			if [[ -n $nocolor ]]; then
+				specified=""
+			elif [[ -n $specified ]]; then
+				specified="✈"
+			else
+				specified="🏠"
+			fi
+			printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" $(c bold ${i}) "$res" "$emoji" $specified
+		else
+			printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" $(c bold $i) "$res" "$emoji"
+		fi
+	fi
 done
-
 
 [[ -n ${jsonoutput} ]] && echo "]}"
