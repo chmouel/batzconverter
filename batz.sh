@@ -29,6 +29,8 @@ TIME_ZONES_EMOJI=(
 )
 
 DEFAULT_TIME_ZOME_EMOJI="🌍"
+nocolor=
+[[ -n ${NO_COLOR} ]] && nocolor=true
 
 for f in ~/.config/batz.sh ~/.config/batz/config ;do
     [[ -e ${f} ]] && { source ${f} ;}
@@ -66,6 +68,8 @@ on MacOSX
 if '-j' is specified batz will generate a json output for 'Alfred' OSX
 launcher.
 
+If you don't want to have colours or emoji you can specify '-n' on the command line.
+
 configuration is located in ~/.config/batz/config
 see variables TIME_ZONES and TIME_ZONES_EMOJI in this file to see how to
 configure them.
@@ -79,6 +83,10 @@ EOF
 
 
 function c() {
+    [[ -n ${nocolor} ]] && {
+        printf "%s " "$2"
+        return
+    }
     BOLD='\033[1m'
     NONE='\033[00m'
     RED='\033[01;31m'
@@ -99,14 +107,27 @@ function c() {
     printf "%b" "${color}$2${NONE} "
 }
 
+# parse arguments
+while getopts ":hjn" opt; do
+    case $opt in
+        n)
+            nocolor=true
+            ;;
+        h)
+            help
+            exit 0
+            ;;
+        j)
+            jsonoutput=true
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
 
-if [[ $1 == "-h" || $1 == "--help" ]];then
-    help
-    exit 0
-elif [[ $1 == "-j" || $1 == "--json" ]];then
-    jsonoutput=true
-    shift
-fi
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your batz directly in currentz like
@@ -114,7 +135,6 @@ fi
 currenttz=$(env ls -l /etc/localtime|env awk -F/ '{print $(NF-1)"/"$NF}')
 date="date"
 type -p gdate >/dev/null 2>/dev/null && date="gdate"
-
 athour=
 
 while [[ $1 == +* ]];do
@@ -169,6 +189,7 @@ for i in "${!TIME_ZONES[@]}";do
     [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") || \
             res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
     [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} " || emoji="${DEFAULT_TIME_ZOME_EMOJI}"
+    [[ -n ${nocolor} ]] && emoji=""
 
     if [[ ${jsonoutput} ]];then
         cat <<EOF
@@ -188,7 +209,9 @@ EOF
         echo "},"
     else
         if [[ $currenttz == "${TIME_ZONES[$i]}" ]];then
-            if [[ -n $specified ]];then
+            if [[ -n $nocolor  ]];then
+                specified=""
+            elif [[ -n $specified ]];then
                 specified="✈"
             else
                 specified="🏠"

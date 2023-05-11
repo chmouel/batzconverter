@@ -95,7 +95,12 @@ emphasis the current timezone in your copy and paste.
 *If you want to add extra timezone with +TZ you need to do at first before the
 options, cause bash getopt is kind of buggy in this regard*
 
-You can use the -j option to output as json and may do some parsing with it. (this is used by the Alfred suppoort).
+You can use the `-j` option to output as json and may do some parsing with it.
+(this is used by the Alfred suppoort).
+
+You can add the `-n` argument to batz to not show any colours or emojis. It
+will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
+well.
 
 ## [Rofi](https://github.com/davatorium/rofi) Support
 
