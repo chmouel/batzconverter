@@ -29,7 +29,13 @@ TIME_ZONES_EMOJI=(
 )
 
 DEFAULT_TIME_ZOME_EMOJI="🌍"
-nocolor=
+if [[ -t 1 ]]; then
+	nocolor=
+else
+	nocolor=true
+fi
+noemoji=
+
 [[ -n ${NO_COLOR} ]] && nocolor=true
 
 for f in ~/.config/batz.sh ~/.config/batz/config; do
@@ -68,7 +74,10 @@ on MacOSX
 if '-j' is specified batz will generate a json output for 'Alfred' OSX
 launcher.
 
-If you don't want to have colours or emoji you can specify '-n' on the command line.
+If you don't want to have colours you can specify '-n' on the command line.
+If you want explicit colors you can specify '-C' on the command line which are
+disabled automatically on pipes or non stdin/tty.
+If you don't want emojis you can specify '-E' on the command line.
 
 configuration is located in ~/.config/batz/config
 see variables TIME_ZONES and TIME_ZONES_EMOJI in this file to see how to
@@ -107,8 +116,14 @@ function c() {
 }
 
 # parse arguments
-while getopts ":hjn" opt; do
+while getopts ":hjnCE" opt; do
 	case $opt in
+	E)
+		noemoji=true
+		;;
+	C)
+		nocolor=
+		;;
 	n)
 		nocolor=true
 		;;
@@ -192,7 +207,7 @@ for i in ${!TIME_ZONES[@]}; do
 	[[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") ||
 		res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
 	[[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
-	[[ -n ${nocolor} ]] && emoji=""
+	[[ -n ${noemoji} ]] && emoji=""
 
 	if [[ ${jsonoutput} ]]; then
 		cat <<EOF
