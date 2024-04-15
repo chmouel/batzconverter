@@ -1,9 +1,6 @@
 #  batzconverter - Batman Timezone Converter
 Show times in different timezone with bash
 
-* Author: Chmouel Boudjnah <chmouel@chmouel.com>
-* License: Apache-2.0
-
 ## Blog post 
 
 https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/
@@ -135,3 +132,17 @@ BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely th
 
 Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository
 and make sure the batz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
+
+## [Zenity](https://help.gnome.org/users/zenity/stable/) support
+
+```shell
+output=$(zenity --entry --text "🦇Time" --entry-text $(date ''+%H:%M''));[[ -n $output ]] && batz $output|wl-copy',
+```
+
+## Copyright
+
+[Apache-2.0](./LICENSE)
+
+## Authors
+
+Chmouel Boudjnah <[@chmouel](https://twitter.com/chmouel)>
