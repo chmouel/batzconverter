@@ -108,17 +108,8 @@ well set `USE_GUM=1` in your config file to set it as default.
 
 The output looks for example like this for me:
 
-```
-╭────────────────┬─────────────────────────╮
-│ Timezone       │ Date                    │
-├────────────────┼─────────────────────────┤
-│ 🇺🇸New-York   │ Tue 23 April 02h57 EDT  │
-│ 🇮🇳Bangalore  │ Tue 23 April 12h27 IST  │
-│ 🇫🇷Nice       │ Tue 23 April 08h57 CEST │
-│ 🇮🇱Tel-Aviv   │ Tue 23 April 09h57 IDT  │
-│ 🐻  California │ Mon 22 April 23h57 PDT  │
-╰────────────────┴─────────────────────────╯
-```
+![image](https://github.com/chmouel/batzconverter/assets/98980/434344f5-1b1d-4d7d-b9ac-db23b2548bb6)
+
 
 You can add the `-n` argument to batz to not show any colours or emojis. It
 will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
