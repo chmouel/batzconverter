@@ -3,6 +3,10 @@
 set -eo pipefail
 declare -A TIME_ZONES TIME_ZONES_EMOJI
 
+TMP=$(mktemp /tmp/.batz.XXXXXX)
+clean() { rm -f $TMP; }
+trap clean EXIT
+
 ## Change the default timezones here!
 TIME_ZONES=(
 	["Bangalore"]="Asia/Calcutta"
@@ -27,6 +31,9 @@ TIME_ZONES_EMOJI=(
 	["California"]="🐻 "
 	["UTC"]="🌍"
 )
+
+# wether to use gum tool to print
+USE_GUM=
 
 DEFAULT_TIME_ZOME_EMOJI="🌍"
 if [[ -t 1 ]]; then
@@ -117,8 +124,11 @@ function c() {
 }
 
 # parse arguments
-while getopts ":hjnCEf" opt; do
+while getopts ":hjnCEfg" opt; do
 	case $opt in
+	g)
+		USE_GUM=yes
+		;;
 	f)
 		fzf_selection=true
 		;;
@@ -226,13 +236,15 @@ if [[ ${jsonoutput} ]]; then
 	cat <<EOF
 {"items": [
 EOF
+elif [[ -n ${USE_GUM} ]]; then
+	echo "Timezone,Date" >$TMP
 fi
 
 for i in ${!TIME_ZONES[@]}; do
 	# bug in gnu date? 'now' doesn't take in consideration TZ :(
 	[[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") ||
 		res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
-	emoji="🌍"
+	emoji="${DEFAULT_TIME_ZOME_EMOJI}"
 	[[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
 	[[ -n ${noemoji} ]] && emoji=""
 
@@ -252,6 +264,8 @@ EOF
 EOF
 		fi
 		echo "},"
+	elif [[ -n ${USE_GUM} ]]; then
+		echo "$emoji $i,$res" >>$TMP
 	else
 		if [[ $currenttz == ${TIME_ZONES[$i]} ]]; then
 			if [[ -n $nocolor ]]; then
@@ -269,3 +283,4 @@ EOF
 done
 
 [[ -n ${jsonoutput} ]] && echo "]}"
+[[ -n ${USE_GUM} ]] && cat $TMP | gum table -p

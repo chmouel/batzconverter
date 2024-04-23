@@ -102,6 +102,24 @@ options, cause bash getopt is kind of buggy in this regard*
 You can use the `-j` option to output as json and may do some parsing with it.
 (this is used by the Alfred suppoort).
 
+If you have the [gum](https://github.com/charmbracelet/gum) utility installed
+you can use the flag `-g` to show the timezone using the gum tables You can as
+well set `USE_GUM=1` in your config file to set it as default.
+
+The output looks for example like this for me:
+
+```
+╭────────────────┬─────────────────────────╮
+│ Timezone       │ Date                    │
+├────────────────┼─────────────────────────┤
+│ 🇺🇸New-York   │ Tue 23 April 02h57 EDT  │
+│ 🇮🇳Bangalore  │ Tue 23 April 12h27 IST  │
+│ 🇫🇷Nice       │ Tue 23 April 08h57 CEST │
+│ 🇮🇱Tel-Aviv   │ Tue 23 April 09h57 IDT  │
+│ 🐻  California │ Mon 22 April 23h57 PDT  │
+╰────────────────┴─────────────────────────╯
+```
+
 You can add the `-n` argument to batz to not show any colours or emojis. It
 will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
 well.
