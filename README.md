@@ -1,9 +1,10 @@
-#  batzconverter - Batman Timezone Converter
+# batzconverter - Batman Timezone Converter
+
 Show times in different timezone with bash
 
-## Blog post 
+## Blog post
 
-https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/
+<https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/>
 
 ## Demo
 
@@ -11,7 +12,7 @@ https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/
 
 ## INSTALL
 
-grab the shell script directly from this repo and put it in your path, or just copy and paste this : 
+grab the shell script directly from this repo and put it in your path, or just copy and paste this :
 
 ```bash
 #  will try to install in /usr/local if you have the right or $HOME/.local/bin need to be in your path
@@ -19,7 +20,7 @@ dest="/usr/local/bin"
 [[ -w ${dest} ]] || { dest=${HOME}/.local/bin;mkdir -p ${dest} ;}
 curl -f -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/master/batz.sh && \
         chmod +x ${dest}/batz && \
-	echo "'The' batz has been installed into: ${dest}/batz"
+ echo "'The' batz has been installed into: ${dest}/batz"
 ```
 
 ## Settings
@@ -47,7 +48,6 @@ DATE_FORMAT_PADDING=10
 DEFAULT_TIME_ZOME_EMOJI="🌐"
 ```
 
-
 The format is :
 
     "TZ_Alias_Name"="Timezone"
@@ -63,6 +63,7 @@ You can look an example in my config [here](https://gitlab.com/chmouel/rc-config
 Some pretty modern Bash >4.0 and modern GNU Date. On MacosX install those from brew (bash and gnuutils).
 
 ## Usage
+
 ```bash
 % batz
 % batz 10h30
@@ -73,12 +74,18 @@ Some pretty modern Bash >4.0 and modern GNU Date. On MacosX install those from b
 BaTZ  will show all different timezone for the timeformat
 
 You can as well add multiple timezones directly on the command line like this :
+
 ```bash
 % batz +America/Chicago +UTC 10h00 tomorrow
 ```
 
+If you don't know the timezone and you have the
+[fzf](https://github.com/junegunn/fzf) utility installed you can use the `-f`
+option to select interactively the timezone. You can select multiple timezone
+by using the `TAB` key in fzf.
+
 By default this script will try to detect your current timezone, if you want
-to say something like this: 
+to say something like this:
 show me the different times tomorrow if I were at 10h00 AM on UTC timezone, you can do :
 
 ```bash
@@ -101,20 +108,19 @@ well.
 
 ## [Rofi](https://github.com/davatorium/rofi) Support
 
-Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere, i.e: `~/.config/rofi/rofibatz.sh`, launch it up like this : 
+Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere, i.e: `~/.config/rofi/rofibatz.sh`, launch it up like this :
 
 `rofi -modi batz:${HOME}/.config/rofi/rofibatz.sh -show batz`
 
 You can type batz string i.e: `13h00 tomorrow` when you press enter it will evaluate it.
 
-I have a [custom theme](https://github.com/chmouel/mounch/blob/main/rofi/mounch.rasi) so your mileage may vary but for me it will be shown like this : 
+I have a [custom theme](https://github.com/chmouel/mounch/blob/main/rofi/mounch.rasi) so your mileage may vary but for me it will be shown like this :
 
 ![See screenshot](./share/rofibatz.png)
 
 ## [Wofi](https://hg.sr.ht/~scoopta/wofi) Support
 
 ![Screenshot_2021-11-23-23:24 03](https://user-images.githubusercontent.com/98980/143138764-574a7885-dc02-4c78-ad24-0c44d88f1bc0.png)
-
 
 Just do something like this assuming you have wofi and wl-copy installed :
 

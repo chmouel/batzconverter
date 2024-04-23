@@ -35,6 +35,7 @@ else
 	nocolor=true
 fi
 noemoji=
+fzf_selection=
 
 [[ -n ${NO_COLOR} ]] && nocolor=true
 
@@ -116,8 +117,11 @@ function c() {
 }
 
 # parse arguments
-while getopts ":hjnCE" opt; do
+while getopts ":hjnCEf" opt; do
 	case $opt in
+	f)
+		fzf_selection=true
+		;;
 	E)
 		noemoji=true
 		;;
@@ -159,6 +163,28 @@ while [[ $1 == +* ]]; do
 	TIME_ZONES[$(basename ${noplus})]=${1#+}
 	shift
 done
+
+if [[ -n ${fzf_selection} ]]; then
+	# I don't know how to do this on non standard distros stuff like nixos
+	[[ -e /usr/share/zoneinfo/ ]] || {
+		echo "/usr/share/zoneinfo/ does not exist"
+		exit 1
+	}
+	type -p fzf >/dev/null 2>/dev/null || {
+		echo "fzf is not installed, please install it"
+		exit 1
+	}
+
+	IFS=$'\n'
+	mapfile -t selected < <(find /usr/share/zoneinfo/ -type f | sed -n '/^[A-Z]*/ { s,/usr/share/zoneinfo/,,;p;}' | fzf --prompt="Select timezone: " --preview="echo {}" --preview-window=up:1:wrap -m)
+	[[ -z ${selected[*]} ]] && {
+		echo "No timezone selected"
+		exit 1
+	}
+	for i in "${selected[@]}"; do
+		TIME_ZONES[$(basename $i)]=$i
+	done
+fi
 
 if [[ $1 == "-t" ]]; then
 	done=
