@@ -29,13 +29,13 @@ TIME_ZONES_EMOJI=(
 	["Paris"]="🇫🇷 "
 	["Boston"]="🇺🇸 "
 	["California"]="🐻 "
-	["UTC"]="🌍"
+	["UTC"]="🌍 "
 )
 
 # wether to use gum tool to print
 USE_GUM=
 
-DEFAULT_TIME_ZOME_EMOJI="🌍"
+DEFAULT_TIME_ZOME_EMOJI="🌍 "
 if [[ -t 1 ]]; then
 	nocolor=
 else
