@@ -11,4 +11,4 @@ elif [[ ${ROFI_RETV} == 1 ]];then
     exit 
 fi
 
-battz|sed -e "s/\x1b\[.\{1,5\}m//g"
+batz|sed -e "s/\x1b\[.\{1,5\}m//g"
