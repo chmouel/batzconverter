@@ -70,7 +70,9 @@ function help() {
   echo -e "batz - The Ultimate TZ Converter 🦇🕒🌍
 
 This script helps you calculate and display time across different timezones
-in a flash! Here are some examples to get you started 💡:
+in a flash! 
+
+Here are some examples to ${GREEN}get you started${NONE} 🚀:
 
 % batz                       ${GREYITALIC}# Display current local time    ${NONE}
 % batz 10h30                 ${GREYITALIC}# Specify an exact time         ${NONE}
@@ -78,7 +80,7 @@ in a flash! Here are some examples to get you started 💡:
 % batz 10h30 next week       ${GREYITALIC}# Look ahead to next week       ${NONE}
 % batz 11:00 next Thursday   ${GREYITALIC}# Future time conversion        ${NONE}
 
-It shows the time in various timezones with delightful details and emojis 🚀.
+This will shows the time in various timezones with delightful details and emojis.
 
 You can also specify multiple timezones directly on the command line like this:
 
