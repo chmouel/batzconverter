@@ -4,42 +4,42 @@ set -eo pipefail
 declare -A TIME_ZONES TIME_ZONES_EMOJI
 
 TMP=$(mktemp /tmp/.batz.XXXXXX)
-clean() { rm -f $TMP; }
+clean() { rm -f "$TMP"; }
 trap clean EXIT
 
 ## Change the default timezones here!
 TIME_ZONES=(
-	["Bangalore"]="Asia/Calcutta"
-	["Brisbane"]="Australia/Brisbane"
-	["Paris"]="Europe/Paris"
-	["Boston"]="America/New_York"
-	["California"]="America/Los_Angeles"
+  ["Bangalore"]="Asia/Calcutta"
+  ["Brisbane"]="Australia/Brisbane"
+  ["Paris"]="Europe/Paris"
+  ["Boston"]="America/New_York"
+  ["California"]="America/Los_Angeles"
 )
 
-# see man date(1) for time format
+# See man date(1) for time format
 DATE_FORMAT="%c"
 
-# How many padding to add when showing the date format, only useful when you customize the DATE_FORMAT
+# Padding to add when showing the date format, useful when customizing DATE_FORMAT
 DATE_FORMAT_PADDING=0
 
-# Not sure why some emojis need a space and the other doesnt 🤷🏼‍♂️
+# Some emojis need a space while others don't 🤷🏼‍♂️
 TIME_ZONES_EMOJI=(
-	["Bangalore"]="🇮🇳 "
-	["Brisbane"]="🇦🇺 "
-	["Paris"]="🇫🇷 "
-	["Boston"]="🇺🇸 "
-	["California"]="🐻 "
-	["UTC"]="🌍 "
+  ["Bangalore"]="🇮🇳 "
+  ["Brisbane"]="🇦🇺 "
+  ["Paris"]="🇫🇷 "
+  ["Boston"]="🇺🇸 "
+  ["California"]="🐻 "
+  ["UTC"]="🌍 "
 )
 
-# wether to use gum tool to print
+# Whether to use gum tool to print
 USE_GUM=
 
-DEFAULT_TIME_ZOME_EMOJI="🌍 "
+DEFAULT_TIME_ZONE_EMOJI="🌍 "
 if [[ -t 1 ]]; then
-	nocolor=
+  nocolor=
 else
-	nocolor=true
+  nocolor=true
 fi
 noemoji=
 fzf_selection=
@@ -47,240 +47,227 @@ fzf_selection=
 [[ -n ${NO_COLOR} ]] && nocolor=true
 
 for f in ~/.config/batz.sh ~/.config/batz/config; do
-	[[ -e ${f} ]] && { source ${f}; }
+  [[ -e ${f} ]] && source "${f}"
 done
 
 function help() {
-	cat <<EOF
-batz - If batman needed a TZ converted he would probably use this 🦇
+  local BLUE=
+  local NONE=
+  local ITALIC=
+  local YELLOW=
+  local YELLOWITALIC=
+  if [[ -t 1 ]]; then
+    BLUE='\033[01;34m'
+    NONE='\033[00m'
+    ITALIC='\033[3m'
+    YELLOW='\033[01;33m'
+    YELLOWITALIC="${YELLOW}${ITALIC}"
+  fi
+  echo -e "batz - The Ultimate TZ Converter 🦇🕒🌍
 
-batz allow to calculate different timezone, it allows you to do somethinge like this :
-% batz
-% batz 10h30
-% batz 19h00 Monday 17 June
-% batz 10h30 next week
-% batz 11:00 next thursday
+This script helps you calculate and display time across different timezones
+in a flash! Here are some examples to get you started 💡:
 
-It will show all different timezone for the timeformat.
+${YELLOWITALIC}% batz                      → Display current local time 🕰️
+% batz 10h30                → Specify an exact time ⏰
+% batz 19h00 Monday 17 June → Use calendar dates for planning 📅
+% batz 10h30 next week       → Look ahead to next week 🔜
+% batz 11:00 next Thursday   → Future time conversion 🗓️${NONE}
 
-You can as well add multiple timezones directly on the command line like this :
+It shows the time in various timezones with delightful details and emojis 🚀.
 
-% batz +America/Chicago +UTC 10h00 tomorrow
+You can also specify multiple timezones directly on the command line like this:
 
-By default this script will try to detect your current timezone and base the
-time conversion on your own timezone, if you want to say something like this,
-show me the different times tomorrow at 10h00 UTC you can do :
+${YELLOWITALIC}% batz +America/Chicago +UTC 10h00 tomorrow${NONE}
 
-% batz -t UTC 10h00 tomorrow
+By default, the script detects your current timezone and converts accordingly.
+To specify a different timezone, use the '-t' flag like so:
 
-and so on,
+${YELLOWITALIC}% batz -t UTC 10h00 tomorrow${NONE}
 
-This needs gnu date, on MacOSX just install gnuutils from brew
-This needs bash v4 too, you need to install it from brew as well
-on MacOSX
+Requirements:
+- GNU date and Bash v4. On macOS, install them via Homebrew 🍀.
 
-if '-j' is specified batz will generate a json output for 'Alfred' OSX
-launcher.
+Additional flags:
+${BLUE}-j${NONE}    Generate JSON output for the Alfred macOS launcher
+${BLUE}-n${NONE}    Disable colors
+${BLUE}-C${NONE}    Enable colors
+${BLUE}-E${NONE}    Disable emojis 😞
+${BLUE}-h${NONE}    Show this help message
 
-If you don't want to have colours you can specify '-n' on the command line.
-If you want explicit colors you can specify '-C' on the command line which are
-disabled automatically on pipes or non stdin/tty.
-If you don't want emojis you can specify '-E' on the command line.
+Configuration is located in ~/.config/batz/config.
+Customize it by modifying TIME_ZONES and TIME_ZONES_EMOJI 🛠️.
 
-configuration is located in ~/.config/batz/config
-see variables TIME_ZONES and TIME_ZONES_EMOJI in this file to see how to
-configure them.
+Be kind and helpful to others 🤗
 
-Conditions to use: Be nice and helpful to other people 🤗
 Author: Chmouel Boudjnah <chmouel@chmouel.com>
-License: Apache
-
-EOF
+License: Apache"
 }
 
 function c() {
-	[[ -n ${nocolor} ]] && {
-		printf "%s " "$2"
-		return
-	}
-	BOLD='\033[1m'
-	NONE='\033[00m'
-	RED='\033[01;31m'
+  [[ -n ${nocolor} ]] && {
+    printf "%s " "$2"
+    return
+  }
+  local BOLD='\033[1m'
+  local NONE='\033[00m'
+  local RED='\033[01;31m'
 
-	case $1 in
-	bold)
-		color=$BOLD
-		;;
-	normal)
-		color=$NONE
-		;;
-	red)
-		color=$BOLD$RED
-		;;
-	*) ;;
-
-	esac
-	printf "%b" "${color}$2${NONE} "
+  case $1 in
+  bold) color=$BOLD ;;
+  normal) color=$NONE ;;
+  red) color=$BOLD$RED ;;
+  *) ;;
+  esac
+  printf "%b" "${color}$2${NONE} "
 }
 
-# parse arguments
+# Parse arguments
 while getopts ":hjnCEfg" opt; do
-	case $opt in
-	g)
-		USE_GUM=yes
-		;;
-	f)
-		fzf_selection=true
-		;;
-	E)
-		noemoji=true
-		;;
-	C)
-		nocolor=
-		;;
-	n)
-		nocolor=true
-		;;
-	h)
-		help
-		exit 0
-		;;
-	j)
-		jsonoutput=true
-		;;
-	\?)
-		echo "Invalid option: -$OPTARG" >&2
-		exit 1
-		;;
-	esac
+  case $opt in
+  g) USE_GUM=yes ;;
+  f) fzf_selection=true ;;
+  E) noemoji=true ;;
+  C) nocolor= ;;
+  n) nocolor=true ;;
+  h)
+    help
+    exit 0
+    ;;
+  j) jsonoutput=true ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
 done
 shift $((OPTIND - 1))
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
-# you may want to specify your batz directly in currentz like
-# currentz="America/Chicago"
+# you may want to specify your timezone directly in currenttz like
+# currenttz="America/Chicago"
 currenttz=$(env ls -l /etc/localtime | env awk -F/ '{print $(NF-1)"/"$NF}')
 date="date"
-type -p gdate >/dev/null 2>/dev/null && date="gdate"
+type -p gdate >/dev/null 2>&1 && date="gdate"
 athour=
 
 while [[ $1 == +* ]]; do
-	noplus=${1#+}
-	[[ -e /usr/share/zoneinfo/${noplus} ]] || {
-		echo "${noplus} does not exist in /usr/share/zoneinfo"
-		exit 1
-	}
-	TIME_ZONES[$(basename ${noplus})]=${1#+}
-	shift
+  noplus=${1#+}
+  [[ -e /usr/share/zoneinfo/${noplus} ]] || {
+    echo "${noplus} does not exist in /usr/share/zoneinfo"
+    exit 1
+  }
+  TIME_ZONES[$(basename "${noplus}")]=${noplus}
+  shift
 done
 
 if [[ -n ${fzf_selection} ]]; then
-	# I don't know how to do this on non standard distros stuff like nixos
-	[[ -e /usr/share/zoneinfo/ ]] || {
-		echo "/usr/share/zoneinfo/ does not exist"
-		exit 1
-	}
-	type -p fzf >/dev/null 2>/dev/null || {
-		echo "fzf is not installed, please install it"
-		exit 1
-	}
+  # I don't know how to do this on non-standard distros like NixOS
+  [[ -e /usr/share/zoneinfo/ ]] || {
+    echo "/usr/share/zoneinfo/ does not exist"
+    exit 1
+  }
+  type -p fzf >/dev/null 2>&1 || {
+    echo "fzf is not installed, please install it"
+    exit 1
+  }
 
-	IFS=$'\n'
-	mapfile -t selected < <(find /usr/share/zoneinfo/ -type f | sed -n '/^[A-Z]*/ { s,/usr/share/zoneinfo/,,;p;}' | fzf --prompt="Select timezone: " --preview="echo {}" --preview-window=up:1:wrap -m)
-	[[ -z ${selected[*]} ]] && {
-		echo "No timezone selected"
-		exit 1
-	}
-	for i in "${selected[@]}"; do
-		TIME_ZONES[$(basename $i)]=$i
-	done
+  IFS=$'\n'
+  mapfile -t selected < <(find /usr/share/zoneinfo/ -type f | sed -n '/^[A-Z]*/ { s,/usr/share/zoneinfo/,,;p;}' | fzf --prompt="Select timezone: " --preview="echo {}" --preview-window=up:1:wrap -m)
+  [[ -z ${selected[*]} ]] && {
+    echo "No timezone selected"
+    exit 1
+  }
+  for i in "${selected[@]}"; do
+    TIME_ZONES[$(basename "$i")]=$i
+  done
 fi
 
 if [[ $1 == "-t" ]]; then
-	done=
-	specified=true
+  done=
+  specified=true
 
-	for i in ${!TIME_ZONES[@]}; do
-		if [[ ${2} == ${i} || ${2} == ${TIME_ZONES[$i]} ]]; then
-			done=1
-			currenttz=${TIME_ZONES[$i]}
-		fi
-	done
+  for i in "${!TIME_ZONES[@]}"; do
+    if [[ ${2} == "${i}" || ${2} == "${TIME_ZONES[$i]}" ]]; then
+      done=1
+      currenttz=${TIME_ZONES[$i]}
+    fi
+  done
 
-	if ((!done)); then
-		currenttz=$2
-		TIME_ZONES[$2]=$2
-	fi
+  if ((!done)); then
+    currenttz=$2
+    TIME_ZONES[$2]=$2
+  fi
 
-	shift
-	shift
+  shift
+  shift
 fi
 
 [[ -e /usr/share/zoneinfo/${currenttz} ]] || {
-	echo "${currenttz} does not exist in /usr/share/zoneinfo"
-	exit 1
+  echo "${currenttz} does not exist in /usr/share/zoneinfo"
+  exit 1
 }
 
-args=($@)
+args=("$@")
 if [[ -n ${1} ]]; then
-	t=$1
-	[[ $t != [0-9]*(:|h)[0-9]* ]] && {
-		echo "Invalid date format: $t you need to specify a time first like tz 10h00 tomorrow!"
-		exit 1
-	}
-	[[ $t == *h ]] && t=${t%h}
-	athour="${t/h/:} ${args[@]:1}"
+  t=$1
+  [[ $t != [0-9]*(:|h)[0-9]* ]] && {
+    echo "Invalid date format: $t. You need to specify a time first like batz 10h00 tomorrow!"
+    exit 1
+  }
+  [[ $t == *h ]] && t=${t%h}
+  athour="${t/h/:} ${args[*]:1}"
 fi
 
 if [[ ${jsonoutput} ]]; then
-	cat <<EOF
+  cat <<EOF
 {"items": [
 EOF
 elif [[ -n ${USE_GUM} ]]; then
-	echo "Timezone,Date" >$TMP
+  echo "Timezone,Date" >"$TMP"
 fi
 
-for i in ${!TIME_ZONES[@]}; do
-	# bug in gnu date? 'now' doesn't take in consideration TZ :(
-	[[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") ||
-		res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
-	emoji="${DEFAULT_TIME_ZOME_EMOJI}"
-	[[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
-	[[ -n ${noemoji} ]] && emoji=""
+for i in "${!TIME_ZONES[@]}"; do
+  # Bug in GNU date? 'now' doesn't take into consideration TZ :(
+  [[ -n ${athour} ]] && res=$(TZ="${TIME_ZONES[$i]}" ${date} --date="TZ=\"${currenttz}\" ${athour}" "+${DATE_FORMAT}") ||
+    res=$(TZ=${TIME_ZONES[$i]} ${date} "+${DATE_FORMAT}")
+  emoji="${DEFAULT_TIME_ZONE_EMOJI}"
+  [[ -n "${TIME_ZONES_EMOJI[$i]}" ]] && emoji="${TIME_ZONES_EMOJI[$i]} "
+  [[ -n ${noemoji} ]] && emoji=""
 
-	if [[ ${jsonoutput} ]]; then
-		cat <<EOF
+  if [[ ${jsonoutput} ]]; then
+    cat <<EOF
     {
         "uid": "",
         "title": "$i",
         "arg": "$res",
         "subtitle": "$res",
 EOF
-		if [[ -e "$PWD/$i.png" ]]; then
-			cat <<EOF
-		"icon": {
-			"path": "$PWD/$i.png"
-		},
+    if [[ -e "$PWD/$i.png" ]]; then
+      cat <<EOF
+        "icon": {
+            "path": "$PWD/$i.png"
+        },
 EOF
-		fi
-		echo "},"
-	elif [[ -n ${USE_GUM} ]]; then
-		echo "$emoji $i,$res" >>$TMP
-	else
-		if [[ $currenttz == ${TIME_ZONES[$i]} ]]; then
-			if [[ -n $nocolor ]]; then
-				specified=""
-			elif [[ -n $specified ]]; then
-				specified="✈"
-			else
-				specified="🏠"
-			fi
-			printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" $(c bold ${i}) "$res" "$emoji" $specified
-		else
-			printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" $(c bold $i) "$res" "$emoji"
-		fi
-	fi
+    fi
+    echo "},"
+  elif [[ -n ${USE_GUM} ]]; then
+    echo "$emoji $i,$res" >>"$TMP"
+  else
+    if [[ $currenttz == "${TIME_ZONES[$i]}" ]]; then
+      if [[ -n $nocolor ]]; then
+        specified=""
+      elif [[ -n $specified ]]; then
+        specified="✈"
+      else
+        specified="🏠"
+      fi
+      printf "%-20s %-${DATE_FORMAT_PADDING}s %s%s\n" "$(c bold "${i}")" "$res" "$emoji" "$specified"
+    else
+      printf "%-20s %-${DATE_FORMAT_PADDING}s %s\n" "$(c bold "$i")" "$res" "$emoji"
+    fi
+  fi
 done
 
 [[ -n ${jsonoutput} ]] && echo "]}"
-[[ -n ${USE_GUM} ]] && cat $TMP | gum table -p
+[[ -n ${USE_GUM} ]] && gum table -p <"$TMP"
