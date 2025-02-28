@@ -1,0 +1,7 @@
+[project]
+dependencies = ["semver"]
+name = "batzconverter"
+version = "2.5.2"
+description = "batz - The Ultimate TZ Converter 🦇🕒🌍"
+readme = "README.md"
+requires-python = ">=3.12"
