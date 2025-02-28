@@ -72,11 +72,11 @@ function help() {
 This script helps you calculate and display time across different timezones
 in a flash! Here are some examples to get you started 💡:
 
-% batz                       ${GREYITALIC}# Display current local time 🕰️   ${NONE}
-% batz 10h30                 ${GREYITALIC}# Specify an exact time ⏰        ${NONE}
-% batz 19h00 Monday 17 June  ${GREYITALIC}# Use calendar dates for planning ${NONE}📅
-% batz 10h30 next week       ${GREYITALIC}# Look ahead to next week 🔜      ${NONE}
-% batz 11:00 next Thursday   ${GREYITALIC}# Future time conversion 🗓️       ${NONE}
+% batz                       ${GREYITALIC}# Display current local time    ${NONE}
+% batz 10h30                 ${GREYITALIC}# Specify an exact time         ${NONE}
+% batz 19h00 Monday 17 June  ${GREYITALIC}# Use calendar dates for planning ${NONE}
+% batz 10h30 next week       ${GREYITALIC}# Look ahead to next week       ${NONE}
+% batz 11:00 next Thursday   ${GREYITALIC}# Future time conversion        ${NONE}
 
 It shows the time in various timezones with delightful details and emojis 🚀.
 
@@ -85,11 +85,11 @@ You can also specify multiple timezones directly on the command line like this:
 ${YELLOWITALIC}% batz +America/Chicago +UTC 10h00 tomorrow${NONE}
 
 ${GREEN}More advanced examples:${NONE}
-% batz 3pm next Friday       ${GREYITALIC}# Convert next Friday afternoon time 📡                   ${NONE}
-% batz 9:30 yesterday        ${GREYITALIC}# Check what time it was yesterday 🕘                     ${NONE}
-% batz -t Asia/Tokyo 17:00   ${GREYITALIC}# Convert 5pm Tokyo time to your defaults 🗼              ${NONE}
-% batz 22:00 -g              ${GREYITALIC}# Show tonight's time in a neat table format (need gum) 📊${NONE}
-% batz -f +Europe/London     ${GREYITALIC}# Select custom timezones to display ⚡${NONE}
+% batz 3pm next Friday       ${GREYITALIC}# Convert next Friday afternoon time                    ${NONE}
+% batz 9:30 yesterday        ${GREYITALIC}# Check what time it was yesterday                      ${NONE}
+% batz -t Asia/Tokyo 17:00   ${GREYITALIC}# Convert 5pm Tokyo time to your defaults               ${NONE}
+% batz 22:00 -g              ${GREYITALIC}# Show tonight's time in a neat table format (need gum) ${NONE}
+% batz -f +Europe/London     ${GREYITALIC}# Select custom timezones to display ${NONE}
 
 ${GREEN}Pro tips:${NONE}
 • Combine flags for powerful results: ${ITALIC}batz -fg 15:00${NONE} (custom zones + table format)
@@ -108,9 +108,9 @@ Additional flags:
 ${BLUE}-j${NONE}    Generate JSON output for the Alfred macOS launcher
 ${BLUE}-n${NONE}    Disable colors
 ${BLUE}-C${NONE}    Enable colors
-${BLUE}-E${NONE}    Disable emojis 😞
-${BLUE}-f${NONE}    Select one or more timezones interactively using fzf 🔍
-${BLUE}-g${NONE}    Use gum to format the output in a table 📋
+${BLUE}-E${NONE}    Disable emojis 
+${BLUE}-f${NONE}    Select one or more timezones interactively using fzf 
+${BLUE}-g${NONE}    Use gum to format the output in a table 
 ${BLUE}-h${NONE}    Show this help message
 
 Interactive selection:
