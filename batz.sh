@@ -43,6 +43,7 @@ else
 fi
 noemoji=
 fzf_selection=
+base_time=
 
 [[ -n ${NO_COLOR} ]] && nocolor=true
 
@@ -99,7 +100,7 @@ ${GREEN}Pro tips:${NONE}
 • Chain commands:                     ${ITALIC}batz | grep UTC${NONE} to filter specific timezones 🔍
 
 By default, the script detects your current timezone and converts accordingly.
-To specify a different timezone, use the '-t' flag like so:
+To specify a different timezone, use the '${BLUE}-t${NONE}' flag like so:
 
 ${YELLOWITALIC}% batz -t UTC 10h00 tomorrow${NONE}
 
@@ -108,6 +109,7 @@ Requirements:
 
 Additional flags:
 ${BLUE}-j${NONE}    Generate JSON output for the Alfred macOS launcher
+${BLUE}-t${NONE}    Use another timezone as the base for conversion
 ${BLUE}-n${NONE}    Disable colors
 ${BLUE}-C${NONE}    Enable colors
 ${BLUE}-E${NONE}    Disable emojis 
@@ -126,6 +128,20 @@ Be kind and helpful to others 🤗
 Author: Chmouel Boudjnah <chmouel@chmouel.com>
 License: Apache"
 }
+
+check_tools() {
+  extras=
+  if [[ -n ${USE_GUM} ]]; then
+    extras="gum"
+  fi
+  for tool in fzf awk zdump "${extras}"; do
+    if ! command -v "$tool" &>/dev/null; then
+      echo "$tool is not installed. Please install it."
+      exit 1
+    fi
+  done
+}
+
 function c() {
   [[ -n ${nocolor} ]] && {
     printf "%s " "$2"
@@ -145,13 +161,14 @@ function c() {
 }
 
 # Parse arguments
-while getopts ":hjnCEfg" opt; do
+while getopts ":ht:jnCEfg" opt; do
   case $opt in
   g) USE_GUM=yes ;;
   f) fzf_selection=true ;;
   E) noemoji=true ;;
   C) nocolor= ;;
   n) nocolor=true ;;
+  t) base_time=${OPTARG} ;;
   h)
     help
     exit 0
@@ -165,6 +182,8 @@ while getopts ":hjnCEfg" opt; do
 done
 shift $((OPTIND - 1))
 
+check_tools
+
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your timezone directly in currenttz like
 # currenttz="America/Chicago"
@@ -172,11 +191,16 @@ currenttz=$(env ls -l /etc/localtime | env awk -F/ '{print $(NF-1)"/"$NF}')
 date="date"
 type -p gdate >/dev/null 2>&1 && date="gdate"
 athour=
+zoneinfo=/usr/share/zoneinfo
+
+if [[ -L ${zoneinfo} ]]; then
+  zoneinfo=$(readlink -f ${zoneinfo})
+fi
 
 while [[ $1 == +* ]]; do
   noplus=${1#+}
-  [[ -e /usr/share/zoneinfo/${noplus} ]] || {
-    echo "${noplus} does not exist in /usr/share/zoneinfo"
+  [[ -e ${zoneinfo}/${noplus} ]] || {
+    echo "${noplus} does not exist in ${zoneinfo}"
     exit 1
   }
   TIME_ZONES[$(basename "${noplus}")]=${noplus}
@@ -185,8 +209,8 @@ done
 
 if [[ -n ${fzf_selection} ]]; then
   # I don't know how to do this on non-standard distros like NixOS
-  [[ -e /usr/share/zoneinfo/ ]] || {
-    echo "/usr/share/zoneinfo/ does not exist"
+  [[ -e ${zoneinfo} ]] || {
+    echo "${zoneinfo} does not exist"
     exit 1
   }
   type -p fzf >/dev/null 2>&1 || {
@@ -195,7 +219,9 @@ if [[ -n ${fzf_selection} ]]; then
   }
 
   IFS=$'\n'
-  mapfile -t selected < <(find /usr/share/zoneinfo/ -type f | sed -n '/^[A-Z]*/ { s,/usr/share/zoneinfo/,,;p;}' | fzf --prompt="Select timezone: " --preview="echo {}" --preview-window=up:1:wrap -m)
+  mapfile -t selected < <(find ${zoneinfo} -type f | sed -n "/^[A-Z]*/ { s,${zoneinfo},,;s,^/,,;p}" |
+    fzf --prompt="Select timezone: " -s \
+      --preview="zdump {}|sed 's,${zoneinfo},,';echo;echo 'Next Transition:';zdump -V {} |head -1|sed 's,${zoneinfo},,'" -m)
   [[ -z ${selected[*]} ]] && {
     echo "No timezone selected"
     exit 1
@@ -205,28 +231,26 @@ if [[ -n ${fzf_selection} ]]; then
   done
 fi
 
-if [[ $1 == "-t" ]]; then
+if [[ -n ${base_time} ]]; then
   done=
   specified=true
 
   for i in "${!TIME_ZONES[@]}"; do
-    if [[ ${2} == "${i}" || ${2} == "${TIME_ZONES[$i]}" ]]; then
+    if [[ ${base_time} == "${i}" ]]; then
       done=1
       currenttz=${TIME_ZONES[$i]}
     fi
   done
 
   if ((!done)); then
-    currenttz=$2
-    TIME_ZONES[$2]=$2
+    currenttz=${base_time}
+    TIME_ZONES[${base_time}]=${base_time}
   fi
 
-  shift
-  shift
 fi
 
-[[ -e /usr/share/zoneinfo/${currenttz} ]] || {
-  echo "${currenttz} does not exist in /usr/share/zoneinfo"
+[[ -e ${zoneinfo}/${currenttz} ]] || {
+  echo "${currenttz} does not exist in ${zoneinfo}"
   exit 1
 }
 
