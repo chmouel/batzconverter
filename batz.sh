@@ -47,8 +47,11 @@ base_time=
 
 [[ -n ${NO_COLOR} ]] && nocolor=true
 
-for f in ~/.config/batz.sh ~/.config/batz/config; do
-  [[ -e ${f} ]] && source "${f}"
+for f in ${BATZ_CONFIG_FILE:-} ~/.config/batz.sh ~/.config/batz/config; do
+  [[ -e ${f} ]] && {
+    source "${f}"
+    break
+  }
 done
 
 function help() {

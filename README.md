@@ -25,7 +25,8 @@ curl -f -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconvert
 
 ## Settings
 
-Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and `TIME_ZONES_EMOJI` variable like this :
+Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and
+`TIME_ZONES_EMOJI` variable like this :
 
 ```shell
 ## Change the default timezones here!
@@ -57,6 +58,8 @@ for example :
     "HomeSweetHome"="Europe/Paris"
 
 You can look an example in my config [here](https://gitlab.com/chmouel/rc-config/-/blob/main/batz/config)
+
+you can redefine the location of the config file with the `BATZ_CONFIG_FILE` environment variable.
 
 ## Requirement
 
@@ -109,7 +112,6 @@ well set `USE_GUM=1` in your config file to set it as default.
 The output looks for example like this for me:
 
 ![image](https://github.com/chmouel/batzconverter/assets/98980/434344f5-1b1d-4d7d-b9ac-db23b2548bb6)
-
 
 You can add the `-n` argument to batz to not show any colours or emojis. It
 will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
