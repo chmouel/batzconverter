@@ -150,7 +150,7 @@ will only get you the timezone since wofi doesnt support scripts (afaik)
 
 ## [Alfred](https://www.alfredapp.com/) Support
 
-BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely the timezone from alfred in a nice way.
+Batz support [alfred](https://www.alfredapp.com/), it basically output nicely the timezone from alfred in a nice way.
 
 ![See screenshot](./alfredworkflow/screenshot.png)
 
@@ -171,6 +171,20 @@ TIME_ZONES_ICONS=(
 Each timezone that has an entry in `TIME_ZONES_ICONS` will display its
 corresponding icon in Alfred. Timezones without an icon entry will be displayed
 without an icon.
+
+## Using raffi on Linux
+
+raffi supports as well the json output of batz, you can do something like this to trigger it:
+
+```shell
+
+addons:
+  script_filters:
+    - name: "Timezone"
+      command: "batz.sh"
+      args: ["-j"]
+      keyword: "tz"
+```
 
 ## [Zenity](https://help.gnome.org/users/zenity/stable/) support
 
