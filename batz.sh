@@ -318,5 +318,8 @@ EOF
   fi
 done
 
-[[ -n ${jsonoutput} ]] && echo "]}"
+[[ -n ${jsonoutput} ]] && {
+  echo "]}"
+  exit 0
+}
 [[ -n ${USE_GUM} ]] && gum table -p <"$TMP"
