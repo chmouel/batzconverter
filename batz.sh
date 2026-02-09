@@ -269,6 +269,7 @@ if [[ -n ${1} ]]; then
 fi
 
 if [[ ${jsonoutput} ]]; then
+  json_sep=""
   cat <<EOF
 {"items": [
 EOF
@@ -285,21 +286,27 @@ for i in "${!TIME_ZONES[@]}"; do
   [[ -n ${noemoji} ]] && emoji=""
 
   if [[ ${jsonoutput} ]]; then
+    if [[ -e "$PWD/$i.png" ]]; then
+      subtitle_comma=","
+    else
+      subtitle_comma=""
+    fi
     cat <<EOF
-    {
+$json_sep{
         "uid": "",
         "title": "$i",
         "arg": "$res",
-        "subtitle": "$res",
+        "subtitle": "$res"$subtitle_comma
 EOF
     if [[ -e "$PWD/$i.png" ]]; then
       cat <<EOF
         "icon": {
             "path": "$PWD/$i.png"
-        },
+        }
 EOF
     fi
-    echo "},"
+    echo "}"
+    json_sep=","
   elif [[ -n ${USE_GUM} ]]; then
     echo "$emoji $i,$res" >>"$TMP"
   else
