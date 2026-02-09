@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Author: Chmouel Boudjnah <chmouel@chmouel.com>
 set -eo pipefail
-declare -A TIME_ZONES TIME_ZONES_EMOJI
+declare -A TIME_ZONES TIME_ZONES_EMOJI TIME_ZONES_ICONS
 
 TMP=$(mktemp /tmp/.batz.XXXXXX)
 clean() { rm -f "$TMP"; }
@@ -30,6 +30,16 @@ TIME_ZONES_EMOJI=(
   ["Boston"]="🇺🇸 "
   ["California"]="🐻 "
   ["UTC"]="🌍 "
+)
+
+# Icon paths for JSON output (used by Alfred workflow)
+# Specify full paths to .png icon files for each timezone
+TIME_ZONES_ICONS=(
+  ["Bangalore"]="/path/to/icons/Bangalore.png"
+  ["Brisbane"]="/path/to/icons/Brisbane.png"
+  ["Paris"]="/path/to/icons/Paris.png"
+  ["Boston"]="/path/to/icons/Boston.png"
+  ["California"]="/path/to/icons/California.png"
 )
 
 # Whether to use gum tool to print
@@ -164,7 +174,7 @@ function c() {
 }
 
 # Parse arguments
-while getopts ":ht:jnCEfg" opt; do
+while getopts ":ht:jnCEfg:" opt; do
   case $opt in
   g) USE_GUM=yes ;;
   f) fzf_selection=true ;;
@@ -286,10 +296,11 @@ for i in "${!TIME_ZONES[@]}"; do
   [[ -n ${noemoji} ]] && emoji=""
 
   if [[ ${jsonoutput} ]]; then
-    if [[ -e "$PWD/$i.png" ]]; then
+    subtitle_comma=""
+    icon_path=""
+    if [[ -n "${TIME_ZONES_ICONS[$i]}" ]]; then
       subtitle_comma=","
-    else
-      subtitle_comma=""
+      icon_path="${TIME_ZONES_ICONS[$i]}"
     fi
     cat <<EOF
 $json_sep{
@@ -298,10 +309,10 @@ $json_sep{
         "arg": "$res",
         "subtitle": "$res"$subtitle_comma
 EOF
-    if [[ -e "$PWD/$i.png" ]]; then
+    if [[ -n "$icon_path" ]]; then
       cat <<EOF
         "icon": {
-            "path": "$PWD/$i.png"
+            "path": "$icon_path"
         }
 EOF
     fi

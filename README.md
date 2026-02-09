@@ -44,6 +44,13 @@ TIME_ZONES_EMOJI=(
  ["US-West"]="🐻"
 )
 
+TIME_ZONES_ICONS=(
+ ["India"]="/path/to/icons/India.png"
+ ["Europe"]="/path/to/icons/Europe.png"
+ ["US-East"]="/path/to/icons/US-East.png"
+ ["US-West"]="/path/to/icons/US-West.png"
+)
+
 DATE_FORMAT="%b %Hh%M"
 DATE_FORMAT_PADDING=10
 DEFAULT_TIME_ZOME_EMOJI="🌐"
@@ -102,8 +109,8 @@ emphasis the current timezone in your copy and paste.
 *If you want to add extra timezone with +TZ you need to do at first before the
 options, cause bash getopt is kind of buggy in this regard*
 
-You can use the `-j` option to output as json and may do some parsing with it.
-(this is used by the Alfred suppoort).
+You can use the `-j` option to output as json and may do some parsing with it
+(this is used by the Alfred support).
 
 If you have the [gum](https://github.com/charmbracelet/gum) utility installed
 you can use the flag `-g` to show the timezone using the gum tables You can as
@@ -149,6 +156,21 @@ BaTZ support [alfred](https://www.alfredapp.com/), it basically output nicely th
 
 Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository
 and make sure the batz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
+
+To include icons in the Alfred JSON output, configure the `TIME_ZONES_ICONS`
+hashmap in your config file (`~/.config/batz/config`):
+
+```bash
+TIME_ZONES_ICONS=(
+  ["Paris"]="/path/to/icons/Paris.png"
+  ["Boston"]="/path/to/icons/Boston.png"
+  ["California"]="/path/to/icons/California.png"
+)
+```
+
+Each timezone that has an entry in `TIME_ZONES_ICONS` will display its
+corresponding icon in Alfred. Timezones without an icon entry will be displayed
+without an icon.
 
 ## [Zenity](https://help.gnome.org/users/zenity/stable/) support
 
