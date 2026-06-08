@@ -15,7 +15,7 @@ VERSION=${1-""}
 		print "no or bad reply??"
 		exit
 	fi
-	VERSION=$(python3 -c "import semver,sys;print(str(semver.VersionInfo.parse(sys.argv[1]).bump_${mode}()))" ${current})
+	VERSION=$(uv run --with semver python3 -c "import semver,sys;print(str(semver.VersionInfo.parse(sys.argv[1]).bump_${mode}()))" ${current})
 	[[ -z ${VERSION} ]] && {
 		echo "could not bump version automatically"
 		exit
