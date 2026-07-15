@@ -120,6 +120,16 @@ The output looks for example like this for me:
 
 ![image](https://github.com/chmouel/batzconverter/assets/98980/434344f5-1b1d-4d7d-b9ac-db23b2548bb6)
 
+Use `-s` to render a polished world clock card and copy it to the clipboard:
+
+```bash
+batz -s 10h30 tomorrow
+```
+
+Screenshot output uses the native renderer and pasteboard on macOS. On Linux,
+it uses `rsvg-convert` or ImageMagick to render the PNG and `wl-copy` to copy
+it, so install `wl-clipboard` in addition to one of the renderers.
+
 You can add the `-n` argument to batz to not show any colours or emojis. It
 will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
 well.
