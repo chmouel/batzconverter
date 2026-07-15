@@ -180,6 +180,11 @@ screenshot_date() {
   fi
 }
 
+screenshot_fail() {
+  echo "$1" >&2
+  exit 1
+}
+
 render_screenshot() {
   local svg="${TMP_DIR}/batz.svg"
   local png="${TMP_DIR}/batz.png"
@@ -294,7 +299,7 @@ render_screenshot() {
   } >"$svg"
 
   if [[ $(uname -s) == Darwin ]] && command -v swift &>/dev/null; then
-    swift - "$svg" "$png" <<'SWIFT'
+    swift - "$svg" "$png" <<'SWIFT' || screenshot_fail "Failed to render the screenshot with the native macOS renderer."
 import AppKit
 
 func fail(_ message: String) -> Never {
@@ -329,11 +334,14 @@ guard let data = bitmap.representation(using: .png, properties: [:]) else { fail
 try data.write(to: URL(fileURLWithPath: destination))
 SWIFT
   elif command -v rsvg-convert &>/dev/null; then
-    rsvg-convert --background-color "#090b18" "$svg" --output "$png"
+    rsvg-convert --background-color "#090b18" "$svg" --output "$png" ||
+      screenshot_fail "rsvg-convert failed to render the screenshot."
   elif command -v magick &>/dev/null; then
-    magick -background "#090b18" "$svg" -alpha remove "$png"
+    magick -background "#090b18" "$svg" -alpha remove "$png" ||
+      screenshot_fail "ImageMagick failed to render the screenshot."
   elif command -v convert &>/dev/null; then
-    convert -background "#090b18" "$svg" -alpha remove "$png"
+    convert -background "#090b18" "$svg" -alpha remove "$png" ||
+      screenshot_fail "ImageMagick failed to render the screenshot."
   else
     echo "Screenshot output needs rsvg-convert or ImageMagick." >&2
     exit 1
@@ -345,7 +353,7 @@ SWIFT
       echo "osascript is required to copy PNG images on macOS." >&2
       exit 1
     fi
-    osascript - "$png" <<'APPLESCRIPT' >/dev/null
+    osascript - "$png" <<'APPLESCRIPT' >/dev/null || screenshot_fail "Failed to copy the PNG to the macOS clipboard."
 on run argv
   set imageFile to POSIX file (item 1 of argv)
   set the clipboard to (read imageFile as «class PNGf»)
@@ -361,7 +369,8 @@ APPLESCRIPT
       echo "wl-copy is required to copy PNG images on Wayland." >&2
       exit 1
     fi
-    wl-copy --type image/png <"$png"
+    wl-copy --type image/png <"$png" ||
+      screenshot_fail "wl-copy failed to copy the PNG to the Wayland clipboard."
     ;;
   *)
     echo "Screenshot clipboard output is supported on macOS and Wayland." >&2
