@@ -131,6 +131,19 @@ only Wayland sessions are supported (X11 is not): it uses `rsvg-convert` or
 ImageMagick to render the PNG and `wl-copy` to copy it, so install
 `wl-clipboard` in addition to one of the renderers.
 
+The card comes in a light (default) and a dark theme. Pick one with `-S`:
+
+```bash
+batz -s -S dark
+```
+
+or set `BATZ_SCREENSHOT_THEME=dark` in your config file to make it the
+default.
+
+On macOS the card shows emoji flags. On Linux it shows the country code of
+each timezone instead (like FR or US), since emojis don't come out looking
+right there.
+
 <img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/4e47c9ed-31b4-43ae-9ab0-f3457d899b49" />
 **Example of a screenshot**
 

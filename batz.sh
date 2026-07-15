@@ -3,7 +3,7 @@
 set -eo pipefail
 declare -A TIME_ZONES TIME_ZONES_EMOJI TIME_ZONES_ICONS
 declare -a SCREENSHOT_NAMES SCREENSHOT_DATES SCREENSHOT_TIMES SCREENSHOT_ZONES
-declare -a SCREENSHOT_EMOJIS SCREENSHOT_BADGES
+declare -a SCREENSHOT_EMOJIS SCREENSHOT_BADGES SCREENSHOT_COUNTRIES
 
 TMP_DIR=$(mktemp -d /tmp/.batz.XXXXXX)
 TMP="${TMP_DIR}/table.csv"
@@ -66,6 +66,8 @@ for f in ${BATZ_CONFIG_FILE:-} ~/.config/batz.sh ~/.config/batz/config; do
     break
   }
 done
+
+screenshot_theme=${BATZ_SCREENSHOT_THEME:-light}
 
 function help() {
   local BLUE=
@@ -133,6 +135,7 @@ ${BLUE}-E${NONE}    Disable emojis
 ${BLUE}-f${NONE}    Select one or more timezones interactively using fzf 
 ${BLUE}-g${NONE}    Use gum to format the output in a table 
 ${BLUE}-s${NONE}    Copy the output to the clipboard as a PNG screenshot
+${BLUE}-S${NONE}    Screenshot theme: light or dark (default: light, or \$BATZ_SCREENSHOT_THEME)
 ${BLUE}-h${NONE}    Show this help message
 
 Interactive selection:
@@ -185,6 +188,24 @@ screenshot_fail() {
   exit 1
 }
 
+# Resolve the ISO country code of a timezone from the tzdb tables.
+screenshot_country() {
+  local tz=$1 tab code=
+  for tab in "${zoneinfo}/zone.tab" "${zoneinfo}/zone1970.tab"; do
+    [[ -r ${tab} ]] || continue
+    code=$(awk -v tz="$tz" '$1 !~ /^#/ && $3 == tz { print $1; exit }' "$tab")
+    [[ -n ${code} ]] && break
+  done
+  printf "%s" "${code%%,*}"
+}
+
+# Emoji avatars only render reliably with the native macOS renderer; the
+# Linux renderers cannot be trusted with them, so use initials avatars there.
+screenshot_supports_emoji() {
+  [[ -n ${noemoji} ]] && return 1
+  [[ $(uname -s) == Darwin ]] && command -v swift &>/dev/null
+}
+
 render_screenshot() {
   local svg="${TMP_DIR}/batz.svg"
   local png="${TMP_DIR}/batz.png"
@@ -204,11 +225,73 @@ render_screenshot() {
   local header_title_x=120
   local header_label
   local city_font_size
-  local i y
+  local i y avatar
+  local emoji_avatars=
+
+  local font_sans="Inter, SF Pro Display, Noto Sans, DejaVu Sans, Arial, sans-serif"
+  local font_mono="JetBrains Mono, SFMono-Regular, Noto Sans Mono, DejaVu Sans Mono, Consolas, monospace"
+  local font_emoji="Apple Color Emoji, Noto Color Emoji, Segoe UI Emoji, sans-serif"
+
+  # Theme palette
+  local bg_stop1 bg_stop2 bg_stop3 glow_color glow_opacity
+  local localrow_stop1 localrow_op1 localrow_stop2 localrow_op2 localrow_stroke localrow_stroke_op
+  local accent_stop1 accent_stop2 shadow_color shadow_opacity
+  local panel_fill panel_fill_op panel_stroke panel_stroke_op
+  local title_fill subtitle_fill
+  local pill_fill pill_fill_op pill_stroke pill_stroke_op pill_dot pill_text
+  local row_fill row_fill_op row_stroke row_stroke_op
+  local avatar_fill avatar_fill_op avatar_text
+  local city_fill date_fill time_fill
+  local badge_fill badge_fill_op badge_stroke badge_stroke_op badge_text
+  local zone_fill zone_fill_op zone_stroke zone_stroke_op zone_text
+  local raster_bg
+
+  case ${screenshot_theme} in
+  dark)
+    bg_stop1="#090b18" bg_stop2="#111127" bg_stop3="#07131d"
+    glow_color="#8b5cf6" glow_opacity="0.24"
+    localrow_stop1="#8b5cf6" localrow_op1="0.22" localrow_stop2="#22d3ee" localrow_op2="0.08"
+    localrow_stroke="#a78bfa" localrow_stroke_op="0.45"
+    accent_stop1="#a78bfa" accent_stop2="#22d3ee"
+    shadow_color="#000000" shadow_opacity="0.38"
+    panel_fill="#141426" panel_fill_op="0.94" panel_stroke="#ffffff" panel_stroke_op="0.10"
+    title_fill="#f5f3ff" subtitle_fill="#8f89aa"
+    pill_fill="#ffffff" pill_fill_op="0.055" pill_stroke="#a78bfa" pill_stroke_op="0.32"
+    pill_dot="#22d3ee" pill_text="#d9d5e8"
+    row_fill="#ffffff" row_fill_op="0.035" row_stroke="#ffffff" row_stroke_op="0.055"
+    avatar_fill="#ffffff" avatar_fill_op="0.075" avatar_text="#d9d5e8"
+    city_fill="#f5f3ff" date_fill="#958faa" time_fill="#ffffff"
+    badge_fill="#a78bfa" badge_fill_op="0.16" badge_stroke="#a78bfa" badge_stroke_op="0.38" badge_text="#c4b5fd"
+    zone_fill="#22d3ee" zone_fill_op="0.10" zone_stroke="#22d3ee" zone_stroke_op="0.28" zone_text="#67e8f9"
+    raster_bg="#090b18"
+    ;;
+  *)
+    bg_stop1="#f8fafc" bg_stop2="#eef4ff" bg_stop3="#ecfeff"
+    glow_color="#93c5fd" glow_opacity="0.35"
+    localrow_stop1="#ddd6fe" localrow_op1="0.80" localrow_stop2="#cffafe" localrow_op2="0.70"
+    localrow_stroke="#7c3aed" localrow_stroke_op="0.35"
+    accent_stop1="#7c3aed" accent_stop2="#0891b2"
+    shadow_color="#64748b" shadow_opacity="0.20"
+    panel_fill="#ffffff" panel_fill_op="1" panel_stroke="#cbd5e1" panel_stroke_op="0.90"
+    title_fill="#0f172a" subtitle_fill="#64748b"
+    pill_fill="#f8fafc" pill_fill_op="1" pill_stroke="#c7d2fe" pill_stroke_op="0.95"
+    pill_dot="#0891b2" pill_text="#334155"
+    row_fill="#f8fafc" row_fill_op="1" row_stroke="#e2e8f0" row_stroke_op="0.95"
+    avatar_fill="#e2e8f0" avatar_fill_op="1" avatar_text="#334155"
+    city_fill="#0f172a" date_fill="#64748b" time_fill="#111827"
+    badge_fill="#ede9fe" badge_fill_op="1" badge_stroke="#a78bfa" badge_stroke_op="0.55" badge_text="#5b21b6"
+    zone_fill="#ecfeff" zone_fill_op="1" zone_stroke="#0891b2" zone_stroke_op="0.35" zone_text="#0e7490"
+    raster_bg="#f8fafc"
+    ;;
+  esac
+
+  screenshot_supports_emoji && emoji_avatars=true
 
   if [[ -n ${noemoji} ]]; then
     header_title_x=72
     city_x=82
+  elif [[ -z ${emoji_avatars} ]]; then
+    header_title_x=72
   fi
   header_label=$(TZ="$currenttz" ${date} "+%a, %d %B · %H:%M %Z")
 
@@ -218,43 +301,48 @@ render_screenshot() {
       "$canvas_width" "$canvas_height" "$canvas_width" "$canvas_height"
     printf '%s\n' '  <defs>'
     printf '%s\n' '    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">'
-    printf '%s\n' '      <stop offset="0" stop-color="#090b18"/>'
-    printf '%s\n' '      <stop offset="0.55" stop-color="#111127"/>'
-    printf '%s\n' '      <stop offset="1" stop-color="#07131d"/>'
+    printf '      <stop offset="0" stop-color="%s"/>\n' "$bg_stop1"
+    printf '      <stop offset="0.55" stop-color="%s"/>\n' "$bg_stop2"
+    printf '      <stop offset="1" stop-color="%s"/>\n' "$bg_stop3"
     printf '%s\n' '    </linearGradient>'
     printf '%s\n' '    <radialGradient id="glow">'
-    printf '%s\n' '      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.24"/>'
-    printf '%s\n' '      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>'
+    printf '      <stop offset="0" stop-color="%s" stop-opacity="%s"/>\n' "$glow_color" "$glow_opacity"
+    printf '      <stop offset="1" stop-color="%s" stop-opacity="0"/>\n' "$glow_color"
     printf '%s\n' '    </radialGradient>'
     printf '%s\n' '    <linearGradient id="local-row" x1="0" y1="0" x2="1" y2="0">'
-    printf '%s\n' '      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/>'
-    printf '%s\n' '      <stop offset="1" stop-color="#22d3ee" stop-opacity="0.08"/>'
+    printf '      <stop offset="0" stop-color="%s" stop-opacity="%s"/>\n' "$localrow_stop1" "$localrow_op1"
+    printf '      <stop offset="1" stop-color="%s" stop-opacity="%s"/>\n' "$localrow_stop2" "$localrow_op2"
     printf '%s\n' '    </linearGradient>'
     printf '%s\n' '    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">'
-    printf '%s\n' '      <stop offset="0" stop-color="#a78bfa"/>'
-    printf '%s\n' '      <stop offset="1" stop-color="#22d3ee"/>'
+    printf '      <stop offset="0" stop-color="%s"/>\n' "$accent_stop1"
+    printf '      <stop offset="1" stop-color="%s"/>\n' "$accent_stop2"
     printf '%s\n' '    </linearGradient>'
     printf '%s\n' '    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">'
-    printf '%s\n' '      <feDropShadow dx="0" dy="14" stdDeviation="20" flood-color="#000000" flood-opacity="0.38"/>'
+    printf '      <feDropShadow dx="0" dy="14" stdDeviation="20" flood-color="%s" flood-opacity="%s"/>\n' \
+      "$shadow_color" "$shadow_opacity"
     printf '%s\n' '    </filter>'
     printf '%s\n' '  </defs>'
     printf '%s\n' '  <rect width="100%" height="100%" fill="none"/>'
     printf '  <rect width="%d" height="%d" fill="url(#background)"/>\n' "$canvas_width" "$canvas_height"
     printf '%s\n' '  <circle cx="175" cy="35" r="250" fill="url(#glow)"/>'
     printf '%s\n' '  <circle cx="1110" cy="610" r="260" fill="url(#glow)" opacity="0.45"/>'
-    printf '  <rect x="%d" y="%d" width="%d" height="%d" rx="28" fill="#141426" fill-opacity="0.94" stroke="#ffffff" stroke-opacity="0.10" filter="url(#shadow)"/>\n' \
-      "$panel_x" "$panel_y" "$panel_width" "$panel_height"
+    printf '  <rect x="%d" y="%d" width="%d" height="%d" rx="28" fill="%s" fill-opacity="%s" stroke="%s" stroke-opacity="%s" filter="url(#shadow)"/>\n' \
+      "$panel_x" "$panel_y" "$panel_width" "$panel_height" "$panel_fill" "$panel_fill_op" "$panel_stroke" "$panel_stroke_op"
     printf '  <rect x="%d" y="%d" width="%d" height="4" rx="2" fill="url(#accent)"/>\n' \
       "$((panel_x + 28))" "$panel_y" "$((panel_width - 56))"
 
-    if [[ -z ${noemoji} ]]; then
-      printf '%s\n' '  <text x="72" y="91" font-family="Apple Color Emoji, Noto Color Emoji, Segoe UI Emoji, sans-serif" font-size="32">🦇</text>'
+    if [[ -n ${emoji_avatars} ]]; then
+      printf '  <text x="72" y="91" font-family="%s" font-size="32">🦇</text>\n' "$font_emoji"
     fi
-    printf '  <text x="%d" y="82" fill="#f5f3ff" font-family="SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="29" font-weight="650">World Clock</text>\n' "$header_title_x"
-    printf '  <text x="%d" y="105" fill="#8f89aa" font-family="SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="13" letter-spacing="2.4">TIME AROUND THE WORLD</text>\n' "$header_title_x"
-    printf '%s\n' '  <rect x="735" y="57" width="375" height="49" rx="24" fill="#ffffff" fill-opacity="0.055" stroke="#a78bfa" stroke-opacity="0.32"/>'
-    printf '  <circle cx="764" cy="81" r="5" fill="#22d3ee"/>\n'
-    printf '  <text x="786" y="88" fill="#d9d5e8" font-family="SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="16">%s</text>\n' "$(xml_escape "$header_label")"
+    printf '  <text x="%d" y="82" fill="%s" font-family="%s" font-size="29" font-weight="650">World Clock</text>\n' \
+      "$header_title_x" "$title_fill" "$font_sans"
+    printf '  <text x="%d" y="105" fill="%s" font-family="%s" font-size="13" letter-spacing="2.4">TIME AROUND THE WORLD</text>\n' \
+      "$header_title_x" "$subtitle_fill" "$font_sans"
+    printf '  <rect x="735" y="57" width="375" height="49" rx="24" fill="%s" fill-opacity="%s" stroke="%s" stroke-opacity="%s"/>\n' \
+      "$pill_fill" "$pill_fill_op" "$pill_stroke" "$pill_stroke_op"
+    printf '  <circle cx="764" cy="81" r="5" fill="%s"/>\n' "$pill_dot"
+    printf '  <text x="786" y="88" fill="%s" font-family="%s" font-size="16">%s</text>\n' \
+      "$pill_text" "$font_mono" "$(xml_escape "$header_label")"
 
     for ((i = 0; i < row_count; i++)); do
       y=$((row_start + i * 84))
@@ -263,43 +351,56 @@ render_screenshot() {
       ((${#SCREENSHOT_NAMES[$i]} > 25)) && city_font_size=18
 
       if [[ -n ${SCREENSHOT_BADGES[$i]} ]]; then
-        printf '  <rect x="%d" y="%d" width="%d" height="%d" rx="18" fill="url(#local-row)" stroke="#a78bfa" stroke-opacity="0.45"/>\n' \
-          "$row_x" "$y" "$row_width" "$row_height"
+        printf '  <rect x="%d" y="%d" width="%d" height="%d" rx="18" fill="url(#local-row)" stroke="%s" stroke-opacity="%s"/>\n' \
+          "$row_x" "$y" "$row_width" "$row_height" "$localrow_stroke" "$localrow_stroke_op"
         printf '  <rect x="%d" y="%d" width="4" height="40" rx="2" fill="url(#accent)"/>\n' \
           "$row_x" "$((y + 16))"
       else
-        printf '  <rect x="%d" y="%d" width="%d" height="%d" rx="18" fill="#ffffff" fill-opacity="0.035" stroke="#ffffff" stroke-opacity="0.055"/>\n' \
-          "$row_x" "$y" "$row_width" "$row_height"
+        printf '  <rect x="%d" y="%d" width="%d" height="%d" rx="18" fill="%s" fill-opacity="%s" stroke="%s" stroke-opacity="%s"/>\n' \
+          "$row_x" "$y" "$row_width" "$row_height" "$row_fill" "$row_fill_op" "$row_stroke" "$row_stroke_op"
       fi
 
       if [[ -n ${SCREENSHOT_EMOJIS[$i]} ]]; then
-        printf '  <circle cx="%d" cy="%d" r="24" fill="#ffffff" fill-opacity="0.075"/>\n' "$flag_x" "$((y + 36))"
-        printf '  <text x="%d" y="%d" font-family="Apple Color Emoji, Noto Color Emoji, Segoe UI Emoji, sans-serif" font-size="25" text-anchor="middle">%s</text>\n' \
-          "$flag_x" "$((y + 45))" "$(xml_escape "${SCREENSHOT_EMOJIS[$i]}")"
+        printf '  <circle cx="%d" cy="%d" r="24" fill="%s" fill-opacity="%s"/>\n' \
+          "$flag_x" "$((y + 36))" "$avatar_fill" "$avatar_fill_op"
+        if [[ -n ${emoji_avatars} ]]; then
+          printf '  <text x="%d" y="%d" font-family="%s" font-size="25" text-anchor="middle">%s</text>\n' \
+            "$flag_x" "$((y + 45))" "$font_emoji" "$(xml_escape "${SCREENSHOT_EMOJIS[$i]}")"
+        else
+          avatar=${SCREENSHOT_COUNTRIES[$i]}
+          if [[ -z ${avatar} ]]; then
+            avatar=$(printf "%s" "${SCREENSHOT_NAMES[$i]}" | tr -cd '[:alnum:]' | cut -c 1-2 | tr '[:lower:]' '[:upper:]')
+          fi
+          [[ -z $avatar ]] && avatar=TZ
+          printf '  <text x="%d" y="%d" fill="%s" font-family="%s" font-size="15" font-weight="800" text-anchor="middle">%s</text>\n' \
+            "$flag_x" "$((y + 42))" "$avatar_text" "$font_sans" "$(xml_escape "$avatar")"
+        fi
       fi
 
-      printf '  <text x="%d" y="%d" fill="#f5f3ff" font-family="SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="%d" font-weight="600">%s</text>\n' \
-        "$city_x" "$((y + 31))" "$city_font_size" "$(xml_escape "${SCREENSHOT_NAMES[$i]}")"
-      printf '  <text x="%d" y="%d" fill="#958faa" font-family="SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="15">%s</text>\n' \
-        "$city_x" "$((y + 55))" "$(xml_escape "${SCREENSHOT_DATES[$i]}")"
+      printf '  <text x="%d" y="%d" fill="%s" font-family="%s" font-size="%d" font-weight="600">%s</text>\n' \
+        "$city_x" "$((y + 31))" "$city_fill" "$font_sans" "$city_font_size" "$(xml_escape "${SCREENSHOT_NAMES[$i]}")"
+      printf '  <text x="%d" y="%d" fill="%s" font-family="%s" font-size="15">%s</text>\n' \
+        "$city_x" "$((y + 55))" "$date_fill" "$font_sans" "$(xml_escape "${SCREENSHOT_DATES[$i]}")"
 
       if [[ -n ${SCREENSHOT_BADGES[$i]} ]]; then
-        printf '%s\n' "  <rect x=\"620\" y=\"$((y + 21))\" width=\"82\" height=\"28\" rx=\"14\" fill=\"#a78bfa\" fill-opacity=\"0.16\" stroke=\"#a78bfa\" stroke-opacity=\"0.38\"/>"
-        printf '  <text x="661" y="%d" fill="#c4b5fd" font-family="SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="1.2" text-anchor="middle">%s</text>\n' \
-          "$((y + 40))" "${SCREENSHOT_BADGES[$i]}"
+        printf '  <rect x="620" y="%d" width="82" height="28" rx="14" fill="%s" fill-opacity="%s" stroke="%s" stroke-opacity="%s"/>\n' \
+          "$((y + 21))" "$badge_fill" "$badge_fill_op" "$badge_stroke" "$badge_stroke_op"
+        printf '  <text x="661" y="%d" fill="%s" font-family="%s" font-size="11" font-weight="700" letter-spacing="1.2" text-anchor="middle">%s</text>\n' \
+          "$((y + 40))" "$badge_text" "$font_sans" "${SCREENSHOT_BADGES[$i]}"
       fi
 
-      printf '  <text x="935" y="%d" fill="#ffffff" font-family="SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="36" font-weight="500" text-anchor="end">%s</text>\n' \
-        "$((y + 48))" "$(xml_escape "${SCREENSHOT_TIMES[$i]}")"
-      printf '%s\n' "  <rect x=\"960\" y=\"$((y + 17))\" width=\"100\" height=\"38\" rx=\"19\" fill=\"#22d3ee\" fill-opacity=\"0.10\" stroke=\"#22d3ee\" stroke-opacity=\"0.28\"/>"
-      printf '  <text x="1010" y="%d" fill="#67e8f9" font-family="SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="15" font-weight="600" text-anchor="middle">%s</text>\n' \
-        "$((y + 42))" "$(xml_escape "${SCREENSHOT_ZONES[$i]}")"
+      printf '  <text x="935" y="%d" fill="%s" font-family="%s" font-size="36" font-weight="500" text-anchor="end">%s</text>\n' \
+        "$((y + 48))" "$time_fill" "$font_mono" "$(xml_escape "${SCREENSHOT_TIMES[$i]}")"
+      printf '  <rect x="960" y="%d" width="100" height="38" rx="19" fill="%s" fill-opacity="%s" stroke="%s" stroke-opacity="%s"/>\n' \
+        "$((y + 17))" "$zone_fill" "$zone_fill_op" "$zone_stroke" "$zone_stroke_op"
+      printf '  <text x="1010" y="%d" fill="%s" font-family="%s" font-size="15" font-weight="600" text-anchor="middle">%s</text>\n' \
+        "$((y + 42))" "$zone_text" "$font_mono" "$(xml_escape "${SCREENSHOT_ZONES[$i]}")"
     done
     printf '%s\n' '</svg>'
   } >"$svg"
 
   if [[ $(uname -s) == Darwin ]] && command -v swift &>/dev/null; then
-    swift - "$svg" "$png" <<'SWIFT' || screenshot_fail "Failed to render the screenshot with the native macOS renderer."
+    swift - "$svg" "$png" "$raster_bg" <<'SWIFT' || screenshot_fail "Failed to render the screenshot with the native macOS renderer."
 import AppKit
 
 func fail(_ message: String) -> Never {
@@ -309,6 +410,20 @@ func fail(_ message: String) -> Never {
 
 let source = CommandLine.arguments[1]
 let destination = CommandLine.arguments[2]
+let backgroundHex = CommandLine.arguments[3]
+
+func color(fromHex hex: String) -> NSColor {
+  var value: UInt64 = 0
+  let scanner = Scanner(string: hex.hasPrefix("#") ? String(hex.dropFirst()) : hex)
+  guard scanner.scanHexInt64(&value) else { fail("invalid background color " + hex) }
+  return NSColor(
+    red: CGFloat((value >> 16) & 0xFF) / 255,
+    green: CGFloat((value >> 8) & 0xFF) / 255,
+    blue: CGFloat(value & 0xFF) / 255,
+    alpha: 1
+  )
+}
+
 guard let image = NSImage(contentsOfFile: source) else { fail("could not load the generated SVG") }
 let width = Int(image.size.width)
 let height = Int(image.size.height)
@@ -326,7 +441,7 @@ guard let bitmap = NSBitmapImageRep(
 ) else { fail("could not allocate the PNG bitmap") }
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
-NSColor(red: 9 / 255, green: 11 / 255, blue: 24 / 255, alpha: 1).setFill()
+color(fromHex: backgroundHex).setFill()
 NSBezierPath(rect: NSRect(x: 0, y: 0, width: width, height: height)).fill()
 image.draw(in: NSRect(x: 0, y: 0, width: width, height: height))
 NSGraphicsContext.restoreGraphicsState()
@@ -334,13 +449,13 @@ guard let data = bitmap.representation(using: .png, properties: [:]) else { fail
 try data.write(to: URL(fileURLWithPath: destination))
 SWIFT
   elif command -v rsvg-convert &>/dev/null; then
-    rsvg-convert --background-color "#090b18" "$svg" --output "$png" ||
+    rsvg-convert --background-color "$raster_bg" "$svg" --output "$png" ||
       screenshot_fail "rsvg-convert failed to render the screenshot."
   elif command -v magick &>/dev/null; then
-    magick -background "#090b18" "$svg" -alpha remove "$png" ||
+    magick -background "$raster_bg" "$svg" -alpha remove "$png" ||
       screenshot_fail "ImageMagick failed to render the screenshot."
   elif command -v convert &>/dev/null; then
-    convert -background "#090b18" "$svg" -alpha remove "$png" ||
+    convert -background "$raster_bg" "$svg" -alpha remove "$png" ||
       screenshot_fail "ImageMagick failed to render the screenshot."
   else
     echo "Screenshot output needs rsvg-convert or ImageMagick." >&2
@@ -400,13 +515,14 @@ function c() {
 }
 
 # Parse arguments
-while getopts ":ht:jnCEfgs" opt; do
+while getopts ":ht:jnCEfgsS:" opt; do
   case $opt in
   g) USE_GUM=yes ;;
   s)
     screenshotoutput=true
     USE_GUM=
     ;;
+  S) screenshot_theme=${OPTARG} ;;
   f) fzf_selection=true ;;
   E) noemoji=true ;;
   C) nocolor= ;;
@@ -431,6 +547,14 @@ if [[ -n ${screenshotoutput} && -n ${jsonoutput} ]]; then
   echo "The -s and -j output modes cannot be combined." >&2
   exit 1
 fi
+
+case ${screenshot_theme} in
+light | dark) ;;
+*)
+  echo "Invalid screenshot theme '${screenshot_theme}' (expected light or dark)." >&2
+  exit 1
+  ;;
+esac
 
 # If that fails (old distros used to do a hardlink for /etc/localtime)
 # you may want to specify your timezone directly in currenttz like
@@ -570,6 +694,7 @@ EOF
     SCREENSHOT_ZONES+=("$(screenshot_date "${TIME_ZONES[$i]}" "%Z")")
     SCREENSHOT_EMOJIS+=("$screenshot_emoji")
     SCREENSHOT_BADGES+=("$screenshot_badge")
+    SCREENSHOT_COUNTRIES+=("$(screenshot_country "${TIME_ZONES[$i]}")")
   elif [[ -n ${USE_GUM} ]]; then
     echo "$emoji $i,$res" >>"$TMP"
   else
