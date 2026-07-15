@@ -130,6 +130,9 @@ Screenshot output uses the native renderer and pasteboard on macOS. On Linux,
 it uses `rsvg-convert` or ImageMagick to render the PNG and `wl-copy` to copy
 it, so install `wl-clipboard` in addition to one of the renderers.
 
+<img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/4e47c9ed-31b4-43ae-9ab0-f3457d899b49" />
+**Example of a screenshot**
+
 You can add the `-n` argument to batz to not show any colours or emojis. It
 will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
 well.
