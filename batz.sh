@@ -205,7 +205,7 @@ render_screenshot() {
     header_title_x=72
     city_x=82
   fi
-  header_label=$(screenshot_date "$currenttz" "%a, %d %B · %H:%M %Z")
+  header_label=$(TZ="$currenttz" ${date} "+%a, %d %B · %H:%M %Z")
 
   {
     printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>'
@@ -293,13 +293,18 @@ render_screenshot() {
     printf '%s\n' '</svg>'
   } >"$svg"
 
-  if [[ $(uname -s) == Darwin && -z ${noemoji} ]] && command -v swift &>/dev/null; then
+  if [[ $(uname -s) == Darwin ]] && command -v swift &>/dev/null; then
     swift - "$svg" "$png" <<'SWIFT'
 import AppKit
 
+func fail(_ message: String) -> Never {
+  FileHandle.standardError.write(Data(("batz: " + message + "\n").utf8))
+  exit(1)
+}
+
 let source = CommandLine.arguments[1]
 let destination = CommandLine.arguments[2]
-guard let image = NSImage(contentsOfFile: source) else { exit(1) }
+guard let image = NSImage(contentsOfFile: source) else { fail("could not load the generated SVG") }
 let width = Int(image.size.width)
 let height = Int(image.size.height)
 guard let bitmap = NSBitmapImageRep(
@@ -313,14 +318,14 @@ guard let bitmap = NSBitmapImageRep(
   colorSpaceName: .deviceRGB,
   bytesPerRow: 0,
   bitsPerPixel: 0
-) else { exit(1) }
+) else { fail("could not allocate the PNG bitmap") }
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
 NSColor(red: 9 / 255, green: 11 / 255, blue: 24 / 255, alpha: 1).setFill()
 NSBezierPath(rect: NSRect(x: 0, y: 0, width: width, height: height)).fill()
 image.draw(in: NSRect(x: 0, y: 0, width: width, height: height))
 NSGraphicsContext.restoreGraphicsState()
-guard let data = bitmap.representation(using: .png, properties: [:]) else { exit(1) }
+guard let data = bitmap.representation(using: .png, properties: [:]) else { fail("could not encode the PNG") }
 try data.write(to: URL(fileURLWithPath: destination))
 SWIFT
   elif command -v rsvg-convert &>/dev/null; then
@@ -348,6 +353,10 @@ end run
 APPLESCRIPT
     ;;
   Linux)
+    if [[ -z ${WAYLAND_DISPLAY} ]]; then
+      echo "Screenshot clipboard output on Linux is only supported on Wayland." >&2
+      exit 1
+    fi
     if ! command -v wl-copy &>/dev/null; then
       echo "wl-copy is required to copy PNG images on Wayland." >&2
       exit 1
