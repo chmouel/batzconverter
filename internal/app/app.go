@@ -3,12 +3,15 @@ package app
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/charmbracelet/x/term"
 	"github.com/chmouel/batzconverter/internal/cli"
 	"github.com/chmouel/batzconverter/internal/command"
 	"github.com/chmouel/batzconverter/internal/config"
@@ -17,6 +20,25 @@ import (
 	"github.com/chmouel/batzconverter/internal/screenshot"
 	tzutil "github.com/chmouel/batzconverter/internal/timezone"
 )
+
+var (
+	executablePath = os.Executable
+	currentTime    = time.Now
+)
+
+var ErrNoTimezoneSelected = errors.New("no timezone selected")
+
+type SelectionError struct {
+	ExitCode int
+	Stderr   string
+}
+
+func (err *SelectionError) Error() string {
+	if err.Stderr == "" {
+		return fmt.Sprintf("fzf selection failed with exit code %d", err.ExitCode)
+	}
+	return fmt.Sprintf("fzf selection failed with exit code %d: %s", err.ExitCode, err.Stderr)
+}
 
 const help = `batz-go - timezone converter
 
@@ -27,6 +49,8 @@ Examples:
   batz-go
   batz-go 10h30
   batz-go 10h00 tomorrow
+  batz-go 19h00 Monday 17 June
+  batz-go 10h30 next week
   batz-go -t UTC 11:00 next Thursday
   batz-go +America/Chicago +UTC 10h00 tomorrow
 
@@ -40,9 +64,32 @@ Flags:
   -s       render and copy a screenshot
   -S THEME screenshot theme: light or dark
   -h       show help
+
+The first date argument must be a time using h or :, followed by any expression
+accepted by GNU date. The base zone defaults to the local IANA timezone; -t
+accepts either a configured name or an IANA identifier.
+
+Configuration:
+  ~/.config/batz/config.toml
+  BATZ_CONFIG_FILE overrides that path.
+
+Requirements:
+  GNU coreutils date (gdate on macOS).
+  -f additionally requires fzf and zdump.
+  Screenshot output uses native macOS tools or rsvg-convert/ImageMagick and
+  wl-copy on Linux Wayland.
+
+The Bash-only implementation retains executable shell configuration, -g gum
+tables, and DATE_FORMAT_PADDING. Those features are intentionally absent here.
 `
 
 func Run(ctx context.Context, runner command.Runner, args []string, stdout, stderr io.Writer) error {
+	if len(args) > 0 && args[0] == "--preview-zone" {
+		if len(args) != 2 {
+			return fmt.Errorf("--preview-zone requires exactly one timezone")
+		}
+		return previewZone(ctx, runner, args[1], stdout)
+	}
 	options, err := cli.Parse(args)
 	if err != nil {
 		return err
@@ -162,8 +209,7 @@ func isTerminal(writer io.Writer) bool {
 	if !ok {
 		return false
 	}
-	info, err := file.Stat()
-	return err == nil && info.Mode()&os.ModeCharDevice != 0
+	return term.IsTerminal(file.Fd())
 }
 
 func selectZones(ctx context.Context, runner command.Runner) ([]string, error) {
@@ -178,26 +224,144 @@ func selectZones(ctx context.Context, runner command.Runner) ([]string, error) {
 	if _, err := runner.LookPath("zdump"); err != nil {
 		return nil, fmt.Errorf("zdump is required for -f previews")
 	}
+	executable, err := executablePath()
+	if err != nil {
+		return nil, fmt.Errorf("resolve current executable: %w", err)
+	}
 	input := strings.NewReader(strings.Join(zones, "\n") + "\n")
-	args := []string{"--prompt=Select timezone: ", "-s", "-m", "--preview=zdump {}"}
+	args := []string{
+		"--prompt=Select timezone: ", "-s", "-m",
+		"--preview=" + shellQuote(executable) + " --preview-zone {}",
+	}
 	stdout, stderr, err := runner.Run(ctx, path, args, nil, input)
 	if err != nil {
-		return nil, fmt.Errorf("fzf selection failed: %s", strings.TrimSpace(string(stderr)))
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		exitCode := -1
+		if exitError, ok := err.(interface{ ExitCode() int }); ok {
+			exitCode = exitError.ExitCode()
+		}
+		if exitCode == 1 || exitCode == 130 {
+			return nil, ErrNoTimezoneSelected
+		}
+		return nil, &SelectionError{ExitCode: exitCode, Stderr: strings.TrimSpace(string(stderr))}
+	}
+	offered := make(map[string]struct{}, len(zones))
+	for _, zone := range zones {
+		offered[zone] = struct{}{}
+	}
+	raw := string(stdout)
+	if raw == "" {
+		return nil, ErrNoTimezoneSelected
+	}
+	raw = strings.TrimSuffix(raw, "\n")
+	if raw == "" {
+		return nil, ErrNoTimezoneSelected
 	}
 	var selected []string
-	for _, zone := range strings.Split(strings.TrimSpace(string(stdout)), "\n") {
-		if zone == "" {
-			continue
+	seen := make(map[string]struct{})
+	for _, zone := range strings.Split(raw, "\n") {
+		if zone == "" || strings.ContainsRune(zone, '\r') {
+			return nil, &SelectionError{ExitCode: 0, Stderr: "fzf returned malformed output"}
 		}
-		if err := tzutil.Validate(zone); err != nil {
-			return nil, err
+		if _, found := offered[zone]; !found {
+			return nil, &SelectionError{ExitCode: 0, Stderr: fmt.Sprintf("fzf returned unoffered timezone %q", zone)}
 		}
+		if _, duplicate := seen[zone]; duplicate {
+			return nil, &SelectionError{ExitCode: 0, Stderr: fmt.Sprintf("fzf returned duplicate timezone %q", zone)}
+		}
+		seen[zone] = struct{}{}
 		selected = append(selected, zone)
 	}
 	if len(selected) == 0 {
-		return nil, fmt.Errorf("no timezone selected")
+		return nil, ErrNoTimezoneSelected
 	}
 	return selected, nil
+}
+
+func shellQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", `'"'"'`) + "'"
+}
+
+func previewZone(ctx context.Context, runner command.Runner, zone string, writer io.Writer) error {
+	if err := tzutil.Validate(zone); err != nil {
+		return err
+	}
+	zdump, err := runner.LookPath("zdump")
+	if err != nil {
+		return fmt.Errorf("zdump is required for timezone previews")
+	}
+	const outputLimit = 1 << 20
+	current, currentErr, err := runner.Run(ctx, zdump, []string{zone}, []string{"LC_ALL=C"}, nil)
+	if err != nil {
+		return fmt.Errorf("zdump current time failed: %s", strings.TrimSpace(string(currentErr)))
+	}
+	if len(current) > outputLimit {
+		return fmt.Errorf("zdump current output exceeds 1 MiB")
+	}
+	now := currentTime()
+	rangeArg := fmt.Sprintf("%d,%d", now.Year(), now.Year()+7)
+	transitions, transitionErr, err := runner.Run(ctx, zdump, []string{"-V", "-c", rangeArg, zone}, []string{"LC_ALL=C"}, nil)
+	if err != nil {
+		return fmt.Errorf("zdump transitions failed: %s", strings.TrimSpace(string(transitionErr)))
+	}
+	if len(transitions) > outputLimit {
+		return fmt.Errorf("zdump transition output exceeds 1 MiB")
+	}
+	next, err := nextTransition(string(transitions), now)
+	if err != nil {
+		return err
+	}
+	if _, err := writer.Write(bytes.TrimSuffix(current, []byte("\n"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(writer, "\n\nNext Transition:\n"+next+"\n"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func nextTransition(data string, now time.Time) (string, error) {
+	lines := strings.Split(strings.TrimSuffix(data, "\n"), "\n")
+	if len(lines) == 1 && lines[0] == "" {
+		return "No transition in the next six years", nil
+	}
+	if len(lines)%2 != 0 {
+		return "", fmt.Errorf("malformed zdump output: unpaired transition")
+	}
+	horizon := now.AddDate(6, 0, 0)
+	for index := 0; index < len(lines); index += 2 {
+		before, err := transitionInstant(lines[index])
+		if err != nil {
+			return "", err
+		}
+		after, err := transitionInstant(lines[index+1])
+		if err != nil {
+			return "", err
+		}
+		if !after.Equal(before.Add(time.Second)) {
+			return "", fmt.Errorf("malformed zdump output: transition records are not adjacent")
+		}
+		if after.After(now) && !after.After(horizon) {
+			return lines[index+1], nil
+		}
+	}
+	return "No transition in the next six years", nil
+}
+
+func transitionInstant(line string) (time.Time, error) {
+	start := strings.Index(line, "  ")
+	end := strings.Index(line, " UT =")
+	if start < 0 || end <= start+2 {
+		return time.Time{}, fmt.Errorf("malformed zdump transition %q", line)
+	}
+	value := line[start+2 : end]
+	instant, err := time.ParseInLocation("Mon Jan _2 15:04:05 2006", value, time.UTC)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parse zdump transition %q: %w", line, err)
+	}
+	return instant, nil
 }
 
 func runScreenshot(ctx context.Context, runner command.Runner, engine dateengine.Engine, rows []output.Row, baseZone, expression, theme string, avatars, emoji bool, stderr io.Writer) error {

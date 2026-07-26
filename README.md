@@ -53,10 +53,8 @@ such as California's bear are preserved. UTC and `Etc/*` zones use 🌍.
 
 ```toml
 date_format = "%b %Hh%M"
-date_format_padding = 10
 default_timezone_emoji = "🌐 "
 screenshot_theme = "light"
-use_gum = false
 
 [[timezone]]
 name = "India"
@@ -74,6 +72,10 @@ Migration from the Bash configuration is direct: each matching
 `TIME_ZONES`, `TIME_ZONES_EMOJI`, and `TIME_ZONES_ICONS` key becomes one
 `[[timezone]]` entry. Invalid TOML, duplicate names, and invalid IANA zones are
 reported instead of being ignored.
+
+The Go port sizes columns automatically. Remove the obsolete
+`date_format_padding` and `use_gum` keys from older TOML files; strict loading
+reports either key as unknown.
 
 ### Bash configuration
 
@@ -126,9 +128,31 @@ Both implementations require modern GNU `date`. On macOS install coreutils with
 `brew install coreutils`; `batz-go` automatically prefers `gdate`. The Bash
 implementation additionally needs Bash 4 or newer.
 
-Optional features retain their existing tools: `fzf` and `zdump` for `-f`,
-`gum` for `-g`, and the renderer/clipboard dependencies described below for
-`-s`.
+Optional features retain their existing tools: `fzf` and `zdump` for `-f`, and
+the renderer/clipboard dependencies described below for `-s`.
+
+### Bash and Go compatibility
+
+Both implementations delegate date parsing and formatting to GNU `date`, so
+expressions and timezone conversion semantics are shared. The Go command keeps
+several deliberate improvements:
+
+| Area | `batz.sh` | `batz-go` |
+|---|---|---|
+| Configuration | Executable Bash variables | Strict ordered TOML |
+| Ordering | Associative-array order | Declared TOML order |
+| Emoji | Explicit map or globe fallback | Explicit override or inferred IANA country flag |
+| Terminal | Manual byte padding; optional gum | Unicode-aware rounded table; borderless when piped |
+| JSON | Constructed by shell | Escaped with Go's JSON encoder |
+| Colors | May force ANSI into pipes | Pipes remain ANSI-free |
+| `-n` / `-E` | Marker behavior is coupled to color | `-n` controls style; `-E` removes emoji and markers |
+| Gum/padding | `-g`, `USE_GUM`, `DATE_FORMAT_PADDING` | Intentionally removed |
+| Validation | Mostly deferred to tools | Strict config, IANA zone, and option validation |
+| Errors | Shell/tool failures | Contextual typed errors |
+
+The Go version accepts clustered and attached short options more predictably
+and validates that interactive selections came from the system timezone
+catalog. It does not evaluate legacy shell configuration.
 
 ## Usage
 
@@ -170,9 +194,13 @@ options, cause bash getopt is kind of buggy in this regard*
 You can use the `-j` option to output as json and may do some parsing with it
 (this is used by the Alfred support).
 
-If you have the [gum](https://github.com/charmbracelet/gum) utility installed
-you can use the flag `-g` to show the timezone using the gum tables You can as
-well set `USE_GUM=1` in your config file to set it as default.
+`batz-go` renders a rounded, Unicode-aware table on terminals, keeping flags
+and custom emoji aligned. Redirected and piped output is borderless and
+ANSI-free while retaining aligned columns.
+
+The Bash implementation retains its optional
+[gum](https://github.com/charmbracelet/gum) `-g` mode and `USE_GUM` setting;
+these are intentionally not part of `batz-go`.
 
 The output looks for example like this for me:
 
@@ -205,9 +233,9 @@ right there.
 <img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/4e47c9ed-31b4-43ae-9ab0-f3457d899b49" />
 **Example of a screenshot**
 
-You can add the `-n` argument to batz to not show any colours or emojis. It
-will respect the [`NO_COLOUR`](https://no-color.org/) environment variable as
-well.
+Use `-n` to disable colors and `-E` to disable emoji and local/base markers.
+`batz-go` also respects the [`NO_COLOR`](https://no-color.org/) environment
+variable.
 
 ## [Rofi](https://github.com/davatorium/rofi) Support
 

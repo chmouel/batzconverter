@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -100,5 +101,35 @@ func TestScreenshotThemeEnvironmentIsFallback(t *testing.T) {
 	}
 	if cfg.ScreenshotTheme != "dark" {
 		t.Fatalf("theme = %q", cfg.ScreenshotTheme)
+	}
+}
+
+func TestScreenshotThemeEnvironmentOverridesTOML(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.toml")
+	data := `screenshot_theme = "light"
+[[timezone]]
+name = "UTC"
+zone = "UTC"
+`
+	if err := os.WriteFile(path, []byte(data), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("BATZ_CONFIG_FILE", path)
+	t.Setenv("BATZ_SCREENSHOT_THEME", "dark")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.ScreenshotTheme != "dark" {
+		t.Fatalf("theme = %q", cfg.ScreenshotTheme)
+	}
+}
+
+func TestScreenshotThemeRejectsInvalidEnvironment(t *testing.T) {
+	t.Setenv("BATZ_SCREENSHOT_THEME", "blue")
+	t.Setenv("BATZ_CONFIG_FILE", "")
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "BATZ_SCREENSHOT_THEME") {
+		t.Fatalf("error = %v", err)
 	}
 }

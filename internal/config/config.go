@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/BurntSushi/toml"
+	tzutil "github.com/chmouel/batzconverter/internal/timezone"
 )
 
 type Timezone struct {
@@ -26,14 +26,10 @@ type Config struct {
 }
 
 func Defaults() Config {
-	theme := os.Getenv("BATZ_SCREENSHOT_THEME")
-	if theme == "" {
-		theme = "light"
-	}
 	return Config{
 		DateFormat:           "%c",
 		DefaultTimezoneEmoji: "🌍 ",
-		ScreenshotTheme:      theme,
+		ScreenshotTheme:      "light",
 		Timezones: []Timezone{
 			{Name: "Bangalore", Zone: "Asia/Calcutta", Emoji: "🇮🇳 "},
 			{Name: "Brisbane", Zone: "Australia/Brisbane", Emoji: "🇦🇺 "},
@@ -65,7 +61,10 @@ func Load() (Config, error) {
 		if os.Getenv("BATZ_CONFIG_FILE") != "" {
 			return Config{}, fmt.Errorf("configured file %q does not exist", path)
 		}
-		return cfg, validate(cfg)
+		if err := validate(cfg); err != nil {
+			return Config{}, err
+		}
+		return applyThemeEnvironment(cfg)
 	} else if err != nil {
 		return Config{}, fmt.Errorf("inspect config %q: %w", path, err)
 	}
@@ -83,6 +82,20 @@ func Load() (Config, error) {
 	}
 	if err := validate(cfg); err != nil {
 		return Config{}, fmt.Errorf("invalid config %q: %w", path, err)
+	}
+	cfg, err = applyThemeEnvironment(cfg)
+	if err != nil {
+		return Config{}, err
+	}
+	return cfg, nil
+}
+
+func applyThemeEnvironment(cfg Config) (Config, error) {
+	if theme := os.Getenv("BATZ_SCREENSHOT_THEME"); theme != "" {
+		if theme != "light" && theme != "dark" {
+			return Config{}, fmt.Errorf("invalid BATZ_SCREENSHOT_THEME %q: expected light or dark", theme)
+		}
+		cfg.ScreenshotTheme = theme
 	}
 	return cfg, nil
 }
@@ -106,7 +119,7 @@ func validate(cfg Config) error {
 			return fmt.Errorf("duplicate timezone name %q", zone.Name)
 		}
 		names[zone.Name] = struct{}{}
-		if _, err := time.LoadLocation(zone.Zone); err != nil {
+		if err := tzutil.Validate(zone.Zone); err != nil {
 			return fmt.Errorf("timezone %q has invalid zone %q: %w", zone.Name, zone.Zone, err)
 		}
 	}

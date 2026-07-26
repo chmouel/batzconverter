@@ -53,6 +53,15 @@ func Terminal(writer io.Writer, rows []Row, interactive, color, emoji bool) erro
 	if len(rows) == 0 {
 		return nil
 	}
+	showMarker := false
+	if emoji {
+		for _, row := range rows {
+			if row.IsBase || row.IsLocal {
+				showMarker = true
+				break
+			}
+		}
+	}
 	data := make([][]string, 0, len(rows))
 	for _, row := range rows {
 		cells := []string{row.Name, row.Value}
@@ -63,7 +72,10 @@ func Terminal(writer io.Writer, rows []Row, interactive, color, emoji bool) erro
 			} else if row.IsLocal {
 				marker = "🏠"
 			}
-			cells = append(cells, strings.TrimSpace(row.Emoji), marker)
+			cells = append(cells, strings.TrimSpace(row.Emoji))
+			if showMarker {
+				cells = append(cells, marker)
+			}
 		}
 		data = append(data, cells)
 	}

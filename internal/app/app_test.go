@@ -9,11 +9,31 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 type fakeRunner struct {
 	paths map[string]string
 }
+
+type selectionRunner struct {
+	stdout []byte
+	stderr []byte
+	err    error
+}
+
+func (selectionRunner) LookPath(name string) (string, error) {
+	return "/bin/" + name, nil
+}
+
+func (runner selectionRunner) Run(context.Context, string, []string, []string, io.Reader) ([]byte, []byte, error) {
+	return runner.stdout, runner.stderr, runner.err
+}
+
+type exitError int
+
+func (code exitError) Error() string { return "exit" }
+func (code exitError) ExitCode() int { return int(code) }
 
 func (f fakeRunner) LookPath(name string) (string, error) {
 	path, ok := f.paths[name]
@@ -101,5 +121,83 @@ func TestRunFZFAddsSelection(t *testing.T) {
 		if !strings.Contains(stdout.String(), name) {
 			t.Fatalf("stdout does not contain %s: %s", name, stdout.String())
 		}
+	}
+}
+
+func TestShellQuote(t *testing.T) {
+	if got, want := shellQuote("/tmp/a b/c'd"), `'/tmp/a b/c'"'"'d'`; got != want {
+		t.Fatalf("shellQuote() = %q, want %q", got, want)
+	}
+}
+
+func TestNextTransition(t *testing.T) {
+	now := time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
+	data := `Europe/Paris  Sun Mar 29 00:59:59 2026 UT = Sun Mar 29 01:59:59 2026 CET isdst=0 gmtoff=3600
+Europe/Paris  Sun Mar 29 01:00:00 2026 UT = Sun Mar 29 03:00:00 2026 CEST isdst=1 gmtoff=7200
+`
+	got, err := nextTransition(data, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "01:00:00 2026 UT") {
+		t.Fatalf("next transition = %q", got)
+	}
+}
+
+func TestNextTransitionRejectsMalformedPairs(t *testing.T) {
+	_, err := nextTransition("Europe/Paris  bad\n", time.Now())
+	if err == nil {
+		t.Fatal("nextTransition unexpectedly succeeded")
+	}
+}
+
+func TestIsTerminalRejectsRegularDevices(t *testing.T) {
+	file, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	if isTerminal(file) {
+		t.Fatal("os.DevNull detected as a terminal")
+	}
+}
+
+func TestSelectZonesCancellation(t *testing.T) {
+	for _, runner := range []selectionRunner{{}, {err: exitError(1)}, {err: exitError(130)}} {
+		_, err := selectZones(context.Background(), runner)
+		if !errors.Is(err, ErrNoTimezoneSelected) {
+			t.Fatalf("error = %v", err)
+		}
+	}
+}
+
+func TestSelectZonesRejectsUnofferedAndDuplicateOutput(t *testing.T) {
+	for _, output := range [][]byte{[]byte("Not/A_Zone\n"), []byte("UTC\nUTC\n"), []byte("UTC\r\n")} {
+		_, err := selectZones(context.Background(), selectionRunner{stdout: output})
+		var selectionErr *SelectionError
+		if !errors.As(err, &selectionErr) {
+			t.Fatalf("output %q error = %v", output, err)
+		}
+	}
+}
+
+func TestSelectZonesDiscardsPartialOutputOnFailure(t *testing.T) {
+	_, err := selectZones(context.Background(), selectionRunner{
+		stdout: []byte("UTC\n"),
+		stderr: []byte("boom\n"),
+		err:    exitError(2),
+	})
+	var selectionErr *SelectionError
+	if !errors.As(err, &selectionErr) || selectionErr.ExitCode != 2 || selectionErr.Stderr != "boom" {
+		t.Fatalf("error = %#v", err)
+	}
+}
+
+func TestSelectZonesContextCancellationWins(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, err := selectZones(ctx, selectionRunner{err: exitError(2)})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("error = %v", err)
 	}
 }
