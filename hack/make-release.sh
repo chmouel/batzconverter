@@ -28,4 +28,5 @@ git tag -s ${VERSION} -m "Releasing version ${VERSION}"
 git push --tags origin ${VERSION}
 gh release create ${VERSION} --notes "Release ${VERSION} 🥳"
 
+# Run only after the external PKGBUILD has migrated to the Go release archive:
 # ./hack/aur/build.sh ${VERSION}

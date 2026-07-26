@@ -132,7 +132,7 @@ func initials(name string) string {
 }
 
 func RenderAndCopy(ctx context.Context, runner command.Runner, svg []byte, theme string) error {
-	dir, err := os.MkdirTemp("", "batz-go-*")
+	dir, err := os.MkdirTemp("", "batz-*")
 	if err != nil {
 		return fmt.Errorf("create screenshot directory: %w", err)
 	}
@@ -196,7 +196,7 @@ func rasterize(ctx context.Context, runner command.Runner, svgPath, pngPath, bac
 const swiftRenderer = `import AppKit
 
 func fail(_ message: String) -> Never {
-  FileHandle.standardError.write(Data(("batz-go: " + message + "\n").utf8))
+  FileHandle.standardError.write(Data(("batz: " + message + "\n").utf8))
   exit(1)
 }
 

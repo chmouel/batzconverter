@@ -40,19 +40,19 @@ func (err *SelectionError) Error() string {
 	return fmt.Sprintf("fzf selection failed with exit code %d: %s", err.ExitCode, err.Stderr)
 }
 
-const help = `batz-go - timezone converter
+const help = `batz - timezone converter
 
 Usage:
-  batz-go [flags] [+Area/Location ...] [TIME [GNU DATE EXPRESSION...]]
+  batz [flags] [+Area/Location ...] [TIME [GNU DATE EXPRESSION...]]
 
 Examples:
-  batz-go
-  batz-go 10h30
-  batz-go 10h00 tomorrow
-  batz-go 19h00 Monday 17 June
-  batz-go 10h30 next week
-  batz-go -t UTC 11:00 next Thursday
-  batz-go +America/Chicago +UTC 10h00 tomorrow
+  batz
+  batz 10h30
+  batz 10h00 tomorrow
+  batz 19h00 Monday 17 June
+  batz 10h30 next week
+  batz -t UTC 11:00 next Thursday
+  batz +America/Chicago +UTC 10h00 tomorrow
 
 Flags:
   -t ZONE  use another timezone as the base
@@ -78,9 +78,6 @@ Requirements:
   -f additionally requires fzf and zdump.
   Screenshot output uses native macOS tools or rsvg-convert/ImageMagick and
   wl-copy on Linux Wayland.
-
-The Bash-only implementation retains executable shell configuration, -g gum
-tables, and DATE_FORMAT_PADDING. Those features are intentionally absent here.
 `
 
 func Run(ctx context.Context, runner command.Runner, args []string, stdout, stderr io.Writer) error {

@@ -1,55 +1,61 @@
 # batzconverter - Batman Timezone Converter
 
-Show times in different timezones. The original `batz.sh` and the Go port
-`batz-go` are distributed in parallel while output compatibility is validated.
-
-## Blog post
-
-<https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/>
-
-## Demo
+`batz` shows one time across a configured set of timezones. It accepts GNU
+`date` expressions such as `10h00 tomorrow`, keeps timezone output aligned in
+terminals and pipes, and can emit JSON for launchers.
 
 ![See screenshot](./share/screenshot.png)
 
-## INSTALL
+Read the original [blog post](https://blog.chmouel.com/2021/01/31/batzconverter-a-multiple-timezone-converter/)
+for the idea behind the project.
 
-### Go port
+## Install
 
-The Go port removes the Bash 4 dependency, but deliberately delegates
-natural-language parsing and formatting to GNU `date` to preserve expressions
-such as `10h00 tomorrow` and existing `strftime` formats exactly.
-
-```bash
-go install github.com/chmouel/batzconverter/cmd/batz-go@latest
-batz-go 10h00 tomorrow
-```
-
-Tagged releases also contain `batz-go` archives for Linux and macOS. Keep using
-`batz.sh` as `batz` while evaluating the Go port; the two commands can coexist.
-
-### Bash script
-
-grab the shell script directly from this repo and put it in your path, or just copy and paste this :
+Install the latest version with Go:
 
 ```bash
-#  will try to install in /usr/local if you have the right or $HOME/.local/bin need to be in your path
-dest="/usr/local/bin"
-[[ -w ${dest} ]] || { dest=${HOME}/.local/bin;mkdir -p ${dest} ;}
-curl -f -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconverter/master/batz.sh && \
-        chmod +x ${dest}/batz && \
- echo "'The' batz has been installed into: ${dest}/batz"
+go install github.com/chmouel/batzconverter/cmd/batz@latest
+batz 10h00 tomorrow
 ```
 
-## Settings
+Tagged releases provide `batz_<version>_<os>-<arch>.tar.gz` archives for Linux
+and macOS. Each archive contains the `batz` executable.
 
-### Go configuration
+To build from a checkout:
 
-`batz-go` reads `~/.config/batz/config.toml`, or the file named by
-`BATZ_CONFIG_FILE`. Start with [`config.example.toml`](./config.example.toml).
-Timezone entries are an ordered array, so output follows configuration order.
-When `emoji` is omitted, `batz-go` derives the country's flag from the system
-IANA timezone database. Explicit values remain overrides, so custom symbols
-such as California's bear are preserved. UTC and `Etc/*` zones use 🌍.
+```bash
+make
+./bin/batz 10h00 tomorrow
+```
+
+Run `make check` for formatting, vet, and tests. Contributors using
+[`pre-commit`](https://pre-commit.com/) can enable the same checks with:
+
+```bash
+pre-commit install
+```
+
+## Requirements
+
+`batz` delegates natural-language parsing and `strftime` formatting to GNU
+`date`. Linux commonly provides it through coreutils. On macOS:
+
+```bash
+brew install coreutils
+```
+
+The command automatically prefers `gdate` when it is available.
+
+Optional features require:
+
+- `fzf` and `zdump` for interactive timezone selection with `-f`
+- native macOS rendering tools for screenshots on macOS
+- `rsvg-convert` or ImageMagick plus `wl-copy` for screenshots on Wayland
+
+## Configuration
+
+`batz` reads `~/.config/batz/config.toml`. Set `BATZ_CONFIG_FILE` to use a
+different file. Start with [`config.example.toml`](./config.example.toml).
 
 ```toml
 date_format = "%b %Hh%M"
@@ -68,247 +74,152 @@ emoji = "🇪🇺 "
 icon = "/path/to/icons/Europe.png"
 ```
 
-Migration from the Bash configuration is direct: each matching
-`TIME_ZONES`, `TIME_ZONES_EMOJI`, and `TIME_ZONES_ICONS` key becomes one
-`[[timezone]]` entry. Invalid TOML, duplicate names, and invalid IANA zones are
-reported instead of being ignored.
+Timezone entries retain their declared order. When `emoji` is omitted, `batz`
+derives a country flag from the system IANA timezone database. An explicit
+value overrides the inferred flag, so custom symbols are supported. UTC and
+`Etc/*` zones use 🌍.
 
-The Go port sizes columns automatically. Remove the obsolete
-`date_format_padding` and `use_gum` keys from older TOML files; strict loading
-reports either key as unknown.
-
-### Bash configuration
-
-Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and
-`TIME_ZONES_EMOJI` variable like this :
-
-```shell
-## Change the default timezones here!
-TIME_ZONES=(
-  ["India"]="Asia/Calcutta"
-  ["Europe"]="Europe/Paris"
-  ["US-East"]="America/New_York"
-  ["US-West"]="America/Los_Angeles"
-)
-
-TIME_ZONES_EMOJI=(
- ["India"]="🇮🇳 "
- ["Europe"]="🇪🇺 "
- ["US-East"]="🇺🇸 "
- ["US-West"]="🐻"
-)
-
-TIME_ZONES_ICONS=(
- ["India"]="/path/to/icons/India.png"
- ["Europe"]="/path/to/icons/Europe.png"
- ["US-East"]="/path/to/icons/US-East.png"
- ["US-West"]="/path/to/icons/US-West.png"
-)
-
-DATE_FORMAT="%b %Hh%M"
-DATE_FORMAT_PADDING=10
-DEFAULT_TIME_ZOME_EMOJI="🌐"
-```
-
-The format is :
-
-    "TZ_Alias_Name"="Timezone"
-
-for example :
-
-    "HomeSweetHome"="Europe/Paris"
-
-You can look an example in my config [here](https://gitlab.com/chmouel/rc-config/-/blob/main/batz/config)
-
-you can redefine the location of the config file with the `BATZ_CONFIG_FILE` environment variable.
-
-## Requirement
-
-Both implementations require modern GNU `date`. On macOS install coreutils with
-`brew install coreutils`; `batz-go` automatically prefers `gdate`. The Bash
-implementation additionally needs Bash 4 or newer.
-
-Optional features retain their existing tools: `fzf` and `zdump` for `-f`, and
-the renderer/clipboard dependencies described below for `-s`.
-
-### Bash and Go compatibility
-
-Both implementations delegate date parsing and formatting to GNU `date`, so
-expressions and timezone conversion semantics are shared. The Go command keeps
-several deliberate improvements:
-
-| Area | `batz.sh` | `batz-go` |
-|---|---|---|
-| Configuration | Executable Bash variables | Strict ordered TOML |
-| Ordering | Associative-array order | Declared TOML order |
-| Emoji | Explicit map or globe fallback | Explicit override or inferred IANA country flag |
-| Terminal | Manual byte padding; optional gum | Unicode-aware rounded table; borderless when piped |
-| JSON | Constructed by shell | Escaped with Go's JSON encoder |
-| Colors | May force ANSI into pipes | Pipes remain ANSI-free |
-| `-n` / `-E` | Marker behavior is coupled to color | `-n` controls style; `-E` removes emoji and markers |
-| Gum/padding | `-g`, `USE_GUM`, `DATE_FORMAT_PADDING` | Intentionally removed |
-| Validation | Mostly deferred to tools | Strict config, IANA zone, and option validation |
-| Errors | Shell/tool failures | Contextual typed errors |
-
-The Go version accepts clustered and attached short options more predictably
-and validates that interactive selections came from the system timezone
-catalog. It does not evaluate legacy shell configuration.
+Configuration is strict: unknown keys, duplicate names, invalid themes, and
+invalid IANA timezone identifiers are reported as errors.
 
 ## Usage
 
-```bash
-% batz
-% batz 10h30
-% batz 10h30 next week
-% batz 11:00 next thursday
+```text
+batz
+batz 10h30
+batz 10h30 next week
+batz 11:00 next Thursday
+batz +America/Chicago +UTC 10h00 tomorrow
+batz -t UTC 10h00 tomorrow
 ```
 
-BaTZ  will show all different timezone for the timeformat
+The first date argument must be a time written with `h` or `:`, followed by an
+expression accepted by GNU `date`. With no expression, `batz` shows the current
+time.
 
-You can as well add multiple timezones directly on the command line like this :
+The local IANA timezone is the default base. Use `-t` with a configured name or
+IANA identifier to interpret the expression in another timezone:
 
 ```bash
-% batz +America/Chicago +UTC 10h00 tomorrow
+batz -t UTC 10h00 tomorrow
 ```
 
-If you don't know the timezone and you have the
-[fzf](https://github.com/junegunn/fzf) utility installed you can use the `-f`
-option to select interactively the timezone. You can select multiple timezone
-by using the `TAB` key in fzf.
-
-By default this script will try to detect your current timezone, if you want
-to say something like this:
-show me the different times tomorrow if I were at 10h00 AM on UTC timezone, you can do :
+Use `+Area/Location` to add timezones for one invocation. The options can appear
+before the date expression:
 
 ```bash
-% batz -t UTC 10h00
-````
+batz +America/Chicago +UTC -t Europe/Paris 10h00 tomorrow
+```
 
-When you set another timezone than your current one, it wil show a nice ✈️emoji
-near your different base timezone, or by default it will show a 🏠 emojis to
-emphasis the current timezone in your copy and paste.
+Run `batz -h` for the complete flag reference.
 
-*If you want to add extra timezone with +TZ you need to do at first before the
-options, cause bash getopt is kind of buggy in this regard*
+## Output
 
-You can use the `-j` option to output as json and may do some parsing with it
-(this is used by the Alfred support).
+Terminal output uses a rounded, Unicode-aware table with aligned flags and
+custom emoji. Redirected and piped output is borderless, aligned, and
+ANSI-free.
 
-`batz-go` renders a rounded, Unicode-aware table on terminals, keeping flags
-and custom emoji aligned. Redirected and piped output is borderless and
-ANSI-free while retaining aligned columns.
+Use `-n` to disable colors, `-C` to force terminal colors, and `-E` to remove
+emoji and local/base markers. `batz` also respects
+[`NO_COLOR`](https://no-color.org/).
 
-The Bash implementation retains its optional
-[gum](https://github.com/charmbracelet/gum) `-g` mode and `USE_GUM` setting;
-these are intentionally not part of `batz-go`.
+Use `-j` for Alfred-compatible JSON:
 
-The output looks for example like this for me:
+```bash
+batz -j 10h00 tomorrow
+```
 
-![image](https://github.com/chmouel/batzconverter/assets/98980/434344f5-1b1d-4d7d-b9ac-db23b2548bb6)
+### Interactive timezone selection
 
-Use `-s` to render a polished world clock card and copy it to the clipboard:
+With `fzf` and `zdump` installed, `-f` opens the system timezone catalog.
+Select multiple entries with `TAB`:
+
+```bash
+batz -f 10h00 tomorrow
+```
+
+The preview shows the current value and the next timezone transition within six
+years.
+
+### Screenshots
+
+Use `-s` to render a world-clock card and copy it to the clipboard:
 
 ```bash
 batz -s 10h30 tomorrow
+batz -s -S dark 10h30 tomorrow
 ```
 
-Screenshot output uses the native renderer and pasteboard on macOS. On Linux,
-only Wayland sessions are supported (X11 is not): it uses `rsvg-convert` or
-ImageMagick to render the PNG and `wl-copy` to copy it, so install
-`wl-clipboard` in addition to one of the renderers.
+The theme precedence is `-S`, `BATZ_SCREENSHOT_THEME`, TOML
+`screenshot_theme`, then `light`.
 
-The card comes in a light (default) and a dark theme. Pick one with `-S`:
+Linux screenshot support requires Wayland; X11 is not supported. Linux cards
+use country codes instead of emoji flags because emoji rendering varies across
+systems.
+
+<img width="1200" height="630" alt="Example screenshot" src="https://github.com/user-attachments/assets/4e47c9ed-31b4-43ae-9ab0-f3457d899b49" />
+
+## Launcher integrations
+
+### Rofi
+
+Install [`share/rofibatz.sh`](./share/rofibatz.sh), then launch it with:
 
 ```bash
-batz -s -S dark
+rofi -modi batz:${HOME}/.config/rofi/rofibatz.sh -show batz
 ```
 
-or set `BATZ_SCREENSHOT_THEME=dark` in your config file to make it the
-default.
+![Rofi screenshot](./share/rofibatz.png)
 
-On macOS the card shows emoji flags. On Linux it shows the country code of
-each timezone instead (like FR or US), since emojis don't come out looking
-right there.
+### Wofi
 
-<img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/4e47c9ed-31b4-43ae-9ab0-f3457d899b49" />
-**Example of a screenshot**
-
-Use `-n` to disable colors and `-E` to disable emoji and local/base markers.
-`batz-go` also respects the [`NO_COLOR`](https://no-color.org/) environment
-variable.
-
-## [Rofi](https://github.com/davatorium/rofi) Support
-
-Take this rofi script [rofibatz.sh](./share/rofibatz.sh) and place it somewhere, i.e: `~/.config/rofi/rofibatz.sh`, launch it up like this :
-
-`rofi -modi batz:${HOME}/.config/rofi/rofibatz.sh -show batz`
-
-You can type batz string i.e: `13h00 tomorrow` when you press enter it will evaluate it.
-
-I have a [custom theme](https://github.com/chmouel/mounch/blob/main/rofi/mounch.rasi) so your mileage may vary but for me it will be shown like this :
-
-![See screenshot](./share/rofibatz.png)
-
-## [Wofi](https://hg.sr.ht/~scoopta/wofi) Support
-
-![Screenshot_2021-11-23-23:24 03](https://user-images.githubusercontent.com/98980/143138764-574a7885-dc02-4c78-ad24-0c44d88f1bc0.png)
-
-Just do something like this assuming you have wofi and wl-copy installed :
-
-```shell
-wl-copy $(batz|sed -e "s/\x1b\[.\{1,5\}m//g"|wofi -d|sed 's/.* : //')
-```
-
-will only get you the timezone since wofi doesnt support scripts (afaik)
-
-## [Alfred](https://www.alfredapp.com/) Support
-
-Batz support [alfred](https://www.alfredapp.com/), it basically output nicely the timezone from alfred in a nice way.
-
-![See screenshot](./alfredworkflow/screenshot.png)
-
-Just install the [alfredworlflow file](./alfredworkflow/TZ.alfredworkflow) from the repository
-and make sure the batz script is in one of these path: `$HOME/bin/` or `/usr/local/bin/`
-
-To include icons in the Alfred JSON output, configure the `TIME_ZONES_ICONS`
-hashmap in your config file (`~/.config/batz/config`):
+With `wofi` and `wl-copy` installed:
 
 ```bash
-TIME_ZONES_ICONS=(
-  ["Paris"]="/path/to/icons/Paris.png"
-  ["Boston"]="/path/to/icons/Boston.png"
-  ["California"]="/path/to/icons/California.png"
-)
+batz | wofi -d | wl-copy
 ```
 
-Each timezone that has an entry in `TIME_ZONES_ICONS` will display its
-corresponding icon in Alfred. Timezones without an icon entry will be displayed
-without an icon.
+### Alfred
 
-## Using raffi on Linux
+Install [`TZ.alfredworkflow`](./alfredworkflow/TZ.alfredworkflow) and ensure
+`batz` is available in `$HOME/bin`, `/usr/local/bin`, or another directory in
+the workflow's `PATH`.
 
-raffi supports as well the json output of batz, you can do something like this to trigger it:
+![Alfred screenshot](./alfredworkflow/screenshot.png)
 
-```shell
+Set a TOML `icon` on any timezone that should display a custom icon in Alfred:
 
+```toml
+[[timezone]]
+name = "Paris"
+zone = "Europe/Paris"
+icon = "/path/to/icons/Paris.png"
+```
+
+### Raffi
+
+Raffi can consume the JSON output:
+
+```yaml
 addons:
   script_filters:
     - name: "Timezone"
-      command: "batz.sh"
+      command: "batz"
       args: ["-j"]
       keyword: "tz"
 ```
 
-## [Zenity](https://help.gnome.org/users/zenity/stable/) support
+### Zenity
 
-```shell
-output=$(zenity --entry --text "🦇Time" --entry-text $(date ''+%H:%M''));[[ -n $output ]] && batz $output|wl-copy',
+```bash
+output=$(zenity --entry --text "🦇Time" --entry-text "$(date '+%H:%M')")
+[[ -n $output ]] && batz "$output" | wl-copy
 ```
 
-## Copyright
+## License
 
 [Apache-2.0](./LICENSE)
 
-## Authors
+## Author
 
-Chmouel Boudjnah <[@chmouel](https://twitter.com/chmouel)>
+Chmouel Boudjnah [@chmouel](https://twitter.com/chmouel)
