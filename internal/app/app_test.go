@@ -30,10 +30,6 @@ func (f fakeRunner) Run(_ context.Context, _ string, args, env []string, stdin i
 	if len(args) > 0 && strings.HasPrefix(args[0], "--prompt=") {
 		return []byte("Asia/Tokyo\n"), nil, nil
 	}
-	if len(args) > 0 && args[0] == "table" {
-		data, _ := io.ReadAll(stdin)
-		return append([]byte("gum:\n"), data...), nil, nil
-	}
 	format := args[len(args)-1]
 	zone := ""
 	for _, value := range env {
@@ -89,18 +85,6 @@ func TestRunAddsExplicitBaseZone(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), `"title": "Asia/Tokyo"`) {
 		t.Fatalf("stdout = %s", stdout.String())
-	}
-}
-
-func TestRunGum(t *testing.T) {
-	writeConfig(t)
-	var stdout bytes.Buffer
-	runner := fakeRunner{paths: map[string]string{"date": "/bin/date", "gum": "/bin/gum"}}
-	if err := Run(context.Background(), runner, []string{"-g"}, &stdout, io.Discard); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.HasPrefix(stdout.String(), "gum:\nTimezone,Date\n") {
-		t.Fatalf("stdout = %q", stdout.String())
 	}
 }
 

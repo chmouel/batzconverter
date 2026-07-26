@@ -21,7 +21,6 @@ func TestLoadDefaultsWithoutFile(t *testing.T) {
 func TestLoadTOMLPreservesOrder(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.toml")
 	data := `date_format = "%Y-%m-%d %H:%M %Z"
-date_format_padding = 25
 screenshot_theme = "dark"
 
 [[timezone]]
@@ -44,7 +43,7 @@ emoji = "FR"
 	if len(cfg.Timezones) != 2 || cfg.Timezones[0].Name != "UTC" || cfg.Timezones[1].Name != "Paris" {
 		t.Fatalf("timezone order = %#v", cfg.Timezones)
 	}
-	if cfg.ScreenshotTheme != "dark" || cfg.DateFormatPadding != 25 {
+	if cfg.ScreenshotTheme != "dark" {
 		t.Fatalf("unexpected config: %#v", cfg)
 	}
 }
@@ -63,6 +62,16 @@ name = "Bad"
 zone = "Not/A_Zone"
 `,
 		"unknown key": `date_formt = "%c"
+[[timezone]]
+name = "UTC"
+zone = "UTC"
+`,
+		"removed gum key": `use_gum = true
+[[timezone]]
+name = "UTC"
+zone = "UTC"
+`,
+		"removed padding key": `date_format_padding = 10
 [[timezone]]
 name = "UTC"
 zone = "UTC"

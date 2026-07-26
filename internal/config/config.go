@@ -20,9 +20,7 @@ type Timezone struct {
 
 type Config struct {
 	DateFormat           string     `toml:"date_format"`
-	DateFormatPadding    int        `toml:"date_format_padding"`
 	DefaultTimezoneEmoji string     `toml:"default_timezone_emoji"`
-	UseGum               bool       `toml:"use_gum"`
 	ScreenshotTheme      string     `toml:"screenshot_theme"`
 	Timezones            []Timezone `toml:"timezone"`
 }
@@ -92,9 +90,6 @@ func Load() (Config, error) {
 func validate(cfg Config) error {
 	if cfg.DateFormat == "" {
 		return errors.New("date_format must not be empty")
-	}
-	if cfg.DateFormatPadding < 0 {
-		return errors.New("date_format_padding must not be negative")
 	}
 	if cfg.ScreenshotTheme != "light" && cfg.ScreenshotTheme != "dark" {
 		return errors.New("screenshot_theme must be light or dark")

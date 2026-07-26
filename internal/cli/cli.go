@@ -14,7 +14,6 @@ type Options struct {
 	ForceColor      bool
 	NoEmoji         bool
 	FZF             bool
-	Gum             bool
 	Screenshot      bool
 	ScreenshotTheme string
 	Help            bool
@@ -54,8 +53,6 @@ func Parse(args []string) (Options, error) {
 					options.NoEmoji = true
 				case 'f':
 					options.FZF = true
-				case 'g':
-					options.Gum = true
 				case 's':
 					options.Screenshot = true
 				case 't', 'S':

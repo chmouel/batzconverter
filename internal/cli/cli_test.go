@@ -22,7 +22,7 @@ func TestParseExpressionAndFlags(t *testing.T) {
 }
 
 func TestParseRejectsInvalidCombinations(t *testing.T) {
-	for _, args := range [][]string{{"-s", "-j"}, {"tomorrow"}, {"-S", "blue"}, {"-x"}} {
+	for _, args := range [][]string{{"-s", "-j"}, {"tomorrow"}, {"-S", "blue"}, {"-x"}, {"-g"}} {
 		if _, err := Parse(args); err == nil {
 			t.Fatalf("Parse(%q) unexpectedly succeeded", args)
 		}

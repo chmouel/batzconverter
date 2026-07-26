@@ -1,11 +1,12 @@
 package output
 
 import (
-	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
+
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/table"
 )
 
 type Row struct {
@@ -48,49 +49,69 @@ func JSON(writer io.Writer, rows []Row) error {
 	return encoder.Encode(document)
 }
 
-func Terminal(writer io.Writer, rows []Row, padding int, color, emoji bool) error {
+func Terminal(writer io.Writer, rows []Row, interactive, color, emoji bool) error {
+	if len(rows) == 0 {
+		return nil
+	}
+	data := make([][]string, 0, len(rows))
 	for _, row := range rows {
-		name := row.Name
-		if color {
-			name = "\033[1m" + name + "\033[00m"
-		}
-		suffix := ""
+		cells := []string{row.Name, row.Value}
 		if emoji {
-			suffix = row.Emoji
-		}
-		if row.IsBase {
-			if color {
-				suffix += "✈"
+			marker := ""
+			if row.IsBase {
+				marker = "✈"
+			} else if row.IsLocal {
+				marker = "🏠"
 			}
-		} else if row.IsLocal && color {
-			suffix += "🏠"
+			cells = append(cells, strings.TrimSpace(row.Emoji), marker)
 		}
-		width := padding
-		if width < len(row.Value) {
-			width = len(row.Value)
-		}
-		if _, err := fmt.Fprintf(writer, "%-20s %-*s %s\n", name, width, row.Value, suffix); err != nil {
-			return err
-		}
+		data = append(data, cells)
 	}
-	return nil
-}
 
-func CSV(rows []Row, emoji bool) (string, error) {
-	var buffer strings.Builder
-	writer := csv.NewWriter(&buffer)
-	if err := writer.Write([]string{"Timezone", "Date"}); err != nil {
-		return "", err
+	renderer := table.New().
+		Rows(data...).
+		Wrap(false).
+		BorderRow(false).
+		BorderHeader(false)
+	if interactive {
+		renderer.
+			Border(lipgloss.RoundedBorder()).
+			BorderTop(true).
+			BorderBottom(true).
+			BorderLeft(true).
+			BorderRight(true).
+			BorderColumn(true)
+	} else {
+		renderer.
+			BorderTop(false).
+			BorderBottom(false).
+			BorderLeft(false).
+			BorderRight(false).
+			BorderColumn(false)
 	}
-	for _, row := range rows {
-		name := row.Name
-		if emoji {
-			name = strings.TrimSpace(row.Emoji) + " " + name
+	renderer.StyleFunc(func(_, column int) lipgloss.Style {
+		style := lipgloss.NewStyle()
+		if interactive {
+			style = style.Padding(0, 1)
+		} else if column < len(data[0])-1 {
+			style = style.PaddingRight(2)
 		}
-		if err := writer.Write([]string{name, row.Value}); err != nil {
-			return "", err
+		if color && column == 0 {
+			style = style.Bold(true)
 		}
+		return style
+	})
+	if color {
+		renderer.BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("240")))
 	}
-	writer.Flush()
-	return buffer.String(), writer.Error()
+	rendered := renderer.String()
+	if !interactive {
+		lines := strings.Split(rendered, "\n")
+		for i := range lines {
+			lines[i] = strings.TrimRight(lines[i], " \t")
+		}
+		rendered = strings.Join(lines, "\n")
+	}
+	_, err := io.WriteString(writer, strings.TrimSuffix(rendered, "\n")+"\n")
+	return err
 }

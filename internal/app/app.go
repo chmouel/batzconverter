@@ -37,7 +37,6 @@ Flags:
   -C       force colors
   -E       disable emojis
   -f       select timezones with fzf
-  -g       format output with gum
   -s       render and copy a screenshot
   -S THEME screenshot theme: light or dark
   -h       show help
@@ -59,8 +58,6 @@ func Run(ctx context.Context, runner command.Runner, args []string, stdout, stde
 	if options.ScreenshotTheme != "" {
 		cfg.ScreenshotTheme = options.ScreenshotTheme
 	}
-	options.Gum = options.Gum || cfg.UseGum
-
 	zones := append([]config.Timezone(nil), cfg.Timezones...)
 	for _, zone := range options.AddedZones {
 		if err := tzutil.Validate(zone); err != nil {
@@ -143,11 +140,10 @@ func Run(ctx context.Context, runner command.Runner, args []string, stdout, stde
 		return output.JSON(stdout, rows)
 	case options.Screenshot:
 		return runScreenshot(ctx, runner, engine, rows, baseZone, options.Expression, cfg.ScreenshotTheme, !options.NoEmoji, screenshot.SupportsEmoji(runner), stderr)
-	case options.Gum:
-		return runGum(ctx, runner, rows, !options.NoEmoji, stdout)
 	default:
-		color := options.ForceColor || (!options.NoColor && os.Getenv("NO_COLOR") == "" && isTerminal(stdout))
-		return output.Terminal(stdout, rows, cfg.DateFormatPadding, color, !options.NoEmoji)
+		interactive := isTerminal(stdout)
+		color := interactive && (options.ForceColor || (!options.NoColor && os.Getenv("NO_COLOR") == ""))
+		return output.Terminal(stdout, rows, interactive, color, !options.NoEmoji)
 	}
 }
 
@@ -202,23 +198,6 @@ func selectZones(ctx context.Context, runner command.Runner) ([]string, error) {
 		return nil, fmt.Errorf("no timezone selected")
 	}
 	return selected, nil
-}
-
-func runGum(ctx context.Context, runner command.Runner, rows []output.Row, emoji bool, stdout io.Writer) error {
-	path, err := runner.LookPath("gum")
-	if err != nil {
-		return fmt.Errorf("gum is required for -g")
-	}
-	data, err := output.CSV(rows, emoji)
-	if err != nil {
-		return fmt.Errorf("encode gum input: %w", err)
-	}
-	result, commandErr, err := runner.Run(ctx, path, []string{"table", "-p"}, nil, strings.NewReader(data))
-	if err != nil {
-		return fmt.Errorf("gum table failed: %s", strings.TrimSpace(string(commandErr)))
-	}
-	_, err = stdout.Write(result)
-	return err
 }
 
 func runScreenshot(ctx context.Context, runner command.Runner, engine dateengine.Engine, rows []output.Row, baseZone, expression, theme string, avatars, emoji bool, stderr io.Writer) error {

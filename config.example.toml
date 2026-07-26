@@ -1,7 +1,5 @@
 date_format = "%c"
-date_format_padding = 0
 default_timezone_emoji = "🌍 "
-use_gum = false
 screenshot_theme = "light"
 
 [[timezone]]
