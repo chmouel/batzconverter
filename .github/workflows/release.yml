@@ -1,0 +1,36 @@
+name: Go release binaries
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build archives
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          mkdir dist
+          for target in linux-amd64 linux-arm64 darwin-amd64 darwin-arm64; do
+            os=${target%-*}
+            arch=${target#*-}
+            name="batz-go_${VERSION}_${target}"
+            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o "dist/batz-go" ./cmd/batz-go
+            tar -C dist -czf "dist/${name}.tar.gz" batz-go
+            rm "dist/batz-go"
+          done
+          cd dist
+          sha256sum *.tar.gz > checksums.txt
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*

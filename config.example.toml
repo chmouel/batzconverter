@@ -1,0 +1,29 @@
+date_format = "%c"
+date_format_padding = 0
+default_timezone_emoji = "🌍 "
+use_gum = false
+screenshot_theme = "light"
+
+[[timezone]]
+name = "Bangalore"
+zone = "Asia/Calcutta"
+emoji = "🇮🇳 "
+
+[[timezone]]
+name = "Brisbane"
+zone = "Australia/Brisbane"
+
+[[timezone]]
+name = "Paris"
+zone = "Europe/Paris"
+icon = "/path/to/icons/Paris.png"
+
+[[timezone]]
+name = "Boston"
+zone = "America/New_York"
+
+[[timezone]]
+name = "California"
+zone = "America/Los_Angeles"
+# Explicit emoji values override the automatically inferred country flag.
+emoji = "🐻 "

@@ -1,6 +1,7 @@
 # batzconverter - Batman Timezone Converter
 
-Show times in different timezone with bash
+Show times in different timezones. The original `batz.sh` and the Go port
+`batz-go` are distributed in parallel while output compatibility is validated.
 
 ## Blog post
 
@@ -11,6 +12,22 @@ Show times in different timezone with bash
 ![See screenshot](./share/screenshot.png)
 
 ## INSTALL
+
+### Go port
+
+The Go port removes the Bash 4 dependency, but deliberately delegates
+natural-language parsing and formatting to GNU `date` to preserve expressions
+such as `10h00 tomorrow` and existing `strftime` formats exactly.
+
+```bash
+go install github.com/chmouel/batzconverter/cmd/batz-go@latest
+batz-go 10h00 tomorrow
+```
+
+Tagged releases also contain `batz-go` archives for Linux and macOS. Keep using
+`batz.sh` as `batz` while evaluating the Go port; the two commands can coexist.
+
+### Bash script
 
 grab the shell script directly from this repo and put it in your path, or just copy and paste this :
 
@@ -24,6 +41,41 @@ curl -f -L -o ${dest}/batz https://raw.githubusercontent.com/chmouel/batzconvert
 ```
 
 ## Settings
+
+### Go configuration
+
+`batz-go` reads `~/.config/batz/config.toml`, or the file named by
+`BATZ_CONFIG_FILE`. Start with [`config.example.toml`](./config.example.toml).
+Timezone entries are an ordered array, so output follows configuration order.
+When `emoji` is omitted, `batz-go` derives the country's flag from the system
+IANA timezone database. Explicit values remain overrides, so custom symbols
+such as California's bear are preserved. UTC and `Etc/*` zones use 🌍.
+
+```toml
+date_format = "%b %Hh%M"
+date_format_padding = 10
+default_timezone_emoji = "🌐 "
+screenshot_theme = "light"
+use_gum = false
+
+[[timezone]]
+name = "India"
+zone = "Asia/Calcutta"
+emoji = "🇮🇳 "
+
+[[timezone]]
+name = "Europe"
+zone = "Europe/Paris"
+emoji = "🇪🇺 "
+icon = "/path/to/icons/Europe.png"
+```
+
+Migration from the Bash configuration is direct: each matching
+`TIME_ZONES`, `TIME_ZONES_EMOJI`, and `TIME_ZONES_ICONS` key becomes one
+`[[timezone]]` entry. Invalid TOML, duplicate names, and invalid IANA zones are
+reported instead of being ignored.
+
+### Bash configuration
 
 Create a file in `~/.config/batz/config` and add configure the `TIME_ZONES` and
 `TIME_ZONES_EMOJI` variable like this :
@@ -70,7 +122,13 @@ you can redefine the location of the config file with the `BATZ_CONFIG_FILE` env
 
 ## Requirement
 
-Some pretty modern Bash >4.0 and modern GNU Date. On MacosX install those from brew (bash and gnuutils).
+Both implementations require modern GNU `date`. On macOS install coreutils with
+`brew install coreutils`; `batz-go` automatically prefers `gdate`. The Bash
+implementation additionally needs Bash 4 or newer.
+
+Optional features retain their existing tools: `fzf` and `zdump` for `-f`,
+`gum` for `-g`, and the renderer/clipboard dependencies described below for
+`-s`.
 
 ## Usage
 
