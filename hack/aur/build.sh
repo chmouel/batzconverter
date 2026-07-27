@@ -38,7 +38,7 @@ sudo docker run --rm \
                          cd /tmp/${PKGNAME} && \
                          git config --global user.email '${AUTHOR_EMAIL}' && \
                          git config --global user.name '${AUTHOR_NAME}' && \
-                         if ! grep -q 'releases/download' PKGBUILD || ! grep -q 'batz_' PKGBUILD; then echo 'PKGBUILD must use a tagged Go release archive before it can be updated' >&2; exit 1; fi && \
+                         if ! grep -q 'go build' PKGBUILD || ! grep -q './cmd/batz' PKGBUILD; then echo 'PKGBUILD must build the canonical Go command before it can be updated' >&2; exit 1; fi && \
                          sed -E 's#(pkgver=).*#\1$VERSION#' -i PKGBUILD && \
                          updpkgsums && \
                          makepkg --printsrcinfo > .SRCINFO && \
